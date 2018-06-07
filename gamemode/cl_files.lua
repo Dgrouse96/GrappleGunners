@@ -5,6 +5,8 @@
 local Files = {
 	"shared",
 	"shared/spheretrace",
+	"shared/grapple",
+	"shared/grapplelib",
 	"network/cl_network"
 }
 

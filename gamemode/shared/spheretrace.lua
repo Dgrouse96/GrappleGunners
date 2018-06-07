@@ -67,7 +67,7 @@ if SERVER then
 else
 
 	-- Set sphere references
-	hook.Add( "SphereRef", "InitSphereRef", function( t ) Spheres = t PrintTable( Spheres ) end )
+	hook.Add( "SphereRef", "InitSphereRef", function( t ) Spheres = t end )
 	
 end
 

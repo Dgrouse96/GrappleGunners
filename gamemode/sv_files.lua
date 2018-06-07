@@ -14,6 +14,8 @@ local Files = {
 	["shared"] = {
 		"shared",
 		"shared/spheretrace",
+		"shared/grapple",
+		"shared/grapplelib",
 	}
 }
 
