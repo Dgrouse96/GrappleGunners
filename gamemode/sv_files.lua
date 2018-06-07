@@ -4,15 +4,16 @@
 
 local Files = {
 	["server"] = {
-		
+		"network/sv_network"
 	},
 	["client"] = {
 		"cl_init",
 		"cl_files",
-		
+		"network/cl_network"
 	},
 	["shared"] = {
 		"shared",
+		"shared/spheretrace",
 	}
 }
 
@@ -71,5 +72,7 @@ local Resources = {
 }
 
 for k,v in pairs(Resources) do
+	
 	resource.AddFile( v )
+	
 end
