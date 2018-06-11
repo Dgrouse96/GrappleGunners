@@ -140,6 +140,14 @@ function sendEntity( name, ent, ply, rep )
 	
 end
 
+function EveryoneBut( ply )
+	
+	local Players = table.Copy( player.GetAll() )
+	table.RemoveByValue( Players, ply )
+	return Players
+	
+end
+
 
 --
 -- Requests (client to server)

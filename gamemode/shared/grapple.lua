@@ -2,7 +2,9 @@
 -- Predicted Grapple Movement
 --
 
-local MaxCableLength = 2000
+local MaxCableLength = 1500
+local AirSpeed = 2000
+local DecendSpeed = 2300
 
 -- Trace to find hook location, trace line before trace sphere
 local function HookTrace( ply, debugtime )
@@ -56,7 +58,7 @@ local function GetMovementVector( cmd )
 end
 
 -- Calculate New Velocity
-local function CalcGrapple( ply, mv, cmd, trace, tickdata )
+local function CalcGrapple( ply, mv, cmd, trace, tickdata, MoveVec )
 	
 	-- Grab Variables
 	local SwingPos = trace.HitPos
@@ -64,7 +66,15 @@ local function CalcGrapple( ply, mv, cmd, trace, tickdata )
 	local Origin = mv:GetOrigin()
 	local SwingDist = tickdata.SwingDistance
 	local Gravity = cvars.Number( "sv_gravity" ) * FrameTime()
-	local MoveVec = Vector()
+	
+	-- Fix any incorrect grapple locations
+	local GrapLocation = ply.GrappleLocation
+	
+	if CLIENT and ply == LocalPlayer() and GrapLocation and GrapLocation != SwingPos then
+	
+		SwingPos = GrapLocation
+		
+	end
 	
 	-- Setup Cable Vectors
 	local Cable = Origin - SwingPos
@@ -81,28 +91,7 @@ local function CalcGrapple( ply, mv, cmd, trace, tickdata )
 	local Elastic = math.Clamp( ( CableLength - SwingDist ) * 0.01, 0, 1 )
 	local Reflection = ReflectVector( Velocity, CableDirection ) * -1
 	
-	-- Aircontrol
-	if !ply:IsOnGround() then
-		
-		local Ang = Angle( 0, ply:EyeAngles().y, 0 )
-		local MoveVec = GetMovementVector( cmd )
-		local Speed = 200
-		
-		if cmd:KeyDown( IN_SPEED ) then
-			
-			Speed = 800
-			
-		end
-		
-		MoveVec:Rotate( Ang )
-		MoveVec = MoveVec * Lerp( Elastic, Speed, Speed ) * FrameTime()
-		MoveVec = MoveVec + Vector( 0, 0, -Gravity )
-		
-		//print( MoveVec )
-		Velocity = Velocity + MoveVec
-		
-	end
-	
+	Velocity = Velocity + MoveVec
 	local NewVelocity = Reflection + Vector( 0, 0, Gravity )
 	
 	if Velocity:GetNormal():Dot( CableDirection ) > 0 then
@@ -114,7 +103,7 @@ local function CalcGrapple( ply, mv, cmd, trace, tickdata )
 	-- Store Tick Data
 	local TD = {}
 	TD.SwingDistance = SwingDist
-	TD.Velocity = mv:GetVelocity() - MoveVec
+	TD.Velocity = mv:GetVelocity() //- MoveVec
 	TD.Origin = mv:GetOrigin()
 	TD.Trace = trace
 	
@@ -127,7 +116,6 @@ function GM:SetupMove( ply, mv, cmd )
 	
 	if !ply.TickData then ply.TickData = {} end
 	local TD = ply.TickData[ cmd:TickCount() ]
-	local LTD = ply.TickData[ cmd:TickCount()-1 ]
 	
 	if !IsFirstTimePredicted() then
 		
@@ -142,6 +130,44 @@ function GM:SetupMove( ply, mv, cmd )
 	
 	end
 	
+	-- Keep table clean
+	if ply.TickData[ cmd:TickCount()-100 ] then
+	
+		table.remove( ply.TickData, cmd:TickCount()-100 )
+	
+	end
+	
+	
+	-- Last Tick Data
+	local LTD = ply.TickData[ cmd:TickCount()-1 ]
+	local MoveVec = Vector()
+	
+	-- Aircontrol
+	if !ply:IsOnGround() then
+		
+		MoveVec = GetMovementVector( cmd )
+		local Ang = Angle( 0, ply:EyeAngles().y, 0 )
+		local Speed = 400
+		local Decend = 0	
+		
+		if cmd:KeyDown( IN_SPEED ) then
+			
+			Speed = AirSpeed
+			
+		end
+		
+		if cmd:KeyDown( IN_DUCK ) then
+			
+			Decend = DecendSpeed
+			
+		end
+		
+		MoveVec:Rotate( Ang )
+		MoveVec = MoveVec * Speed * FrameTime()
+		MoveVec = MoveVec + Vector( 0, 0, - Decend ) * FrameTime()
+		
+	end
+	
 	if cmd:KeyDown( IN_ATTACK2 ) then
 		
 		local trace
@@ -150,7 +176,7 @@ function GM:SetupMove( ply, mv, cmd )
 		if LTD and LTD.Trace then
 			
 			trace = LTD.Trace
-			TD = CalcGrapple( ply, mv, cmd, trace, LTD )
+			TD = CalcGrapple( ply, mv, cmd, trace, LTD, MoveVec )
 			
 		else
 			
@@ -161,13 +187,32 @@ function GM:SetupMove( ply, mv, cmd )
 				
 				TD = {}
 				TD.SwingDistance = ( mv:GetOrigin() - trace.HitPos ):Length()
-				TD = CalcGrapple( ply, mv, cmd, trace, TD )
+				TD = CalcGrapple( ply, mv, cmd, trace, TD, MoveVec )
+				
+				-- Use this for drawing cable
+				ply.GrappleLocation = trace.HitPos
+				
+				if SERVER then
+				
+					sendTable( "GrappleLocation", { ply = ply, pos = trace.HitPos } )
+				
+				end
 				
 			end
 			
 		end
 		
 		ply.TickData[ cmd:TickCount() ] = TD
+	
+	else
+	
+		ply.GrappleLocation = nil
+		
+		if SERVER then
+			
+			sendEntity( "RemoveGrapple", ply, EveryoneBut( ply ) )
+			
+		end
 
 	end
 	

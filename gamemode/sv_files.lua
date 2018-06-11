@@ -4,12 +4,13 @@
 
 local Files = {
 	["server"] = {
-		"network/sv_network"
+		"network/sv_network",
 	},
 	["client"] = {
 		"cl_init",
 		"cl_files",
-		"network/cl_network"
+		"network/cl_network",
+		"client/grapplecable",
 	},
 	["shared"] = {
 		"shared",

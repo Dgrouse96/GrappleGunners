@@ -7,7 +7,9 @@ local Files = {
 	"shared/spheretrace",
 	"shared/grapple",
 	"shared/grapplelib",
-	"network/cl_network"
+	
+	"network/cl_network",
+	"client/grapplecable",
 }
 
 for k,v in pairs(Files) do

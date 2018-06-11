@@ -21,13 +21,23 @@ local Spheres = {}
 local function SpawnSpheres()
 	
 	if SERVER then
-	
+		
+		-- Remove any existing spheres
+		local OldSpheres = ents.FindByClass( "spheretrace" )
+		
+		for k,v in pairs( OldSpheres ) do
+		
+			v:Remove()
+		
+		end
+		
 		-- Spawn spheres, store references
 		for rad,model in pairs( Radii ) do
 		
 			sphere = ents.Create( "spheretrace" )
-			// sphere:PhysicsInitSphere( rad, "default" )
 			sphere:SetModel( model )
+			sphere:DrawShadow( false )
+			
 			Spheres[rad] = sphere
 			
 		end
