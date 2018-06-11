@@ -2,12 +2,14 @@
 -- Predicted Grapple Movement
 --
 
+local MaxCableLength = 2000
+
 -- Trace to find hook location, trace line before trace sphere
 local function HookTrace( ply, debugtime )
 	
 	local trace = {
 		start = ply:EyePos(), 
-		endpos = ply:EyePos()+ply:EyeAngles():Forward()*1000,
+		endpos = ply:EyePos()+ply:EyeAngles():Forward()*MaxCableLength,
 		mask = MASK_SOLID_BRUSHONLY,
 		radius = 200
 	}
@@ -33,17 +35,90 @@ local function HookTrace( ply, debugtime )
 	
 end
 
+local function boolnum( bool )
+
+	return Either( bool, 1, 0 )
+
+end
+
+local function KeyNum( cmd, key )
+
+	return boolnum( cmd:KeyDown( key ) )
+	
+end
+
+local function GetMovementVector( cmd )
+	
+	local Forward = KeyNum( cmd, IN_FORWARD ) - KeyNum( cmd, IN_BACK )
+	local Right = KeyNum( cmd, IN_MOVELEFT ) - KeyNum( cmd, IN_MOVERIGHT )
+	return Vector( Forward, Right, 0 ):GetNormal()
+	
+end
+
 -- Calculate New Velocity
-local function CalcGrapple( ply, mv, cmd, trace )
+local function CalcGrapple( ply, mv, cmd, trace, tickdata )
 	
-	/*
-	local Direction = mv:GetVelocity()
-	local Normal = trace.HitPos-mv:GetOrigin()
-	Normal:Normalize()
+	-- Grab Variables
+	local SwingPos = trace.HitPos
+	local Velocity = mv:GetVelocity()
+	local Origin = mv:GetOrigin()
+	local SwingDist = tickdata.SwingDistance
+	local Gravity = cvars.Number( "sv_gravity" ) * FrameTime()
+	local MoveVec = Vector()
 	
-	local Reflection = FindReflectionAngle( Direction, Normal )
-	mv:SetVelocity( Reflection )
-	*/
+	-- Setup Cable Vectors
+	local Cable = Origin - SwingPos
+	local CableLength = Cable:Length()
+	local CableDirection = Cable:GetNormal()
+	
+	-- Shorten Cable Length
+	if CableLength < SwingDist then
+		
+		SwingDist = math.Clamp( CableLength, 100, MaxCableLength )
+		
+	end
+
+	local Elastic = math.Clamp( ( CableLength - SwingDist ) * 0.01, 0, 1 )
+	local Reflection = ReflectVector( Velocity, CableDirection ) * -1
+	
+	-- Aircontrol
+	if !ply:IsOnGround() then
+		
+		local Ang = Angle( 0, ply:EyeAngles().y, 0 )
+		local MoveVec = GetMovementVector( cmd )
+		local Speed = 200
+		
+		if cmd:KeyDown( IN_SPEED ) then
+			
+			Speed = 800
+			
+		end
+		
+		MoveVec:Rotate( Ang )
+		MoveVec = MoveVec * Lerp( Elastic, Speed, Speed ) * FrameTime()
+		MoveVec = MoveVec + Vector( 0, 0, -Gravity )
+		
+		//print( MoveVec )
+		Velocity = Velocity + MoveVec
+		
+	end
+	
+	local NewVelocity = Reflection + Vector( 0, 0, Gravity )
+	
+	if Velocity:GetNormal():Dot( CableDirection ) > 0 then
+	
+		mv:SetVelocity( LerpVector( Elastic, Velocity, NewVelocity ) )
+		
+	end
+	
+	-- Store Tick Data
+	local TD = {}
+	TD.SwingDistance = SwingDist
+	TD.Velocity = mv:GetVelocity() - MoveVec
+	TD.Origin = mv:GetOrigin()
+	TD.Trace = trace
+	
+	return TD
 	
 end
 
@@ -59,6 +134,7 @@ function GM:SetupMove( ply, mv, cmd )
 		if TD then
 			
 			mv:SetVelocity( TD.Velocity )
+			mv:SetOrigin( TD.Origin )
 			
 		end
 		
@@ -74,13 +150,7 @@ function GM:SetupMove( ply, mv, cmd )
 		if LTD and LTD.Trace then
 			
 			trace = LTD.Trace
-			CalcGrapple( ply, mv, cmd, trace )
-			
-			TD = {
-				Velocity = mv:GetVelocity(),
-				Trace = trace,
-			}
-			
+			TD = CalcGrapple( ply, mv, cmd, trace, LTD )
 			
 		else
 			
@@ -89,12 +159,9 @@ function GM:SetupMove( ply, mv, cmd )
 			
 			if trace and trace.Hit then
 				
-				CalcGrapple( ply, mv, cmd, trace )
-				
-				TD = {
-					Velocity = mv:GetVelocity(),
-					Trace = trace,
-				}
+				TD = {}
+				TD.SwingDistance = ( mv:GetOrigin() - trace.HitPos ):Length()
+				TD = CalcGrapple( ply, mv, cmd, trace, TD )
 				
 			end
 			
