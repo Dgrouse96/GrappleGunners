@@ -11,6 +11,9 @@ local Files = {
 		"cl_files",
 		"network/cl_network",
 		"client/grapplecable",
+		
+		"anims/posemaker",
+		"anims/poseblender",
 	},
 	["shared"] = {
 		"shared",

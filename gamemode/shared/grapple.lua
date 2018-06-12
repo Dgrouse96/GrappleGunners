@@ -3,8 +3,10 @@
 --
 
 local MaxCableLength = 1500
-local AirSpeed = 2000
-local DecendSpeed = 2300
+local AirAccelerate = 1500
+local DecendAccelerate = 1200
+local MaxAirSpeed = 600
+local MaxDecendSpeed = 800
 
 -- Trace to find hook location, trace line before trace sphere
 local function HookTrace( ply, debugtime )
@@ -37,18 +39,8 @@ local function HookTrace( ply, debugtime )
 	
 end
 
-local function boolnum( bool )
 
-	return Either( bool, 1, 0 )
-
-end
-
-local function KeyNum( cmd, key )
-
-	return boolnum( cmd:KeyDown( key ) )
-	
-end
-
+-- Air Control Direction
 local function GetMovementVector( cmd )
 	
 	local Forward = KeyNum( cmd, IN_FORWARD ) - KeyNum( cmd, IN_BACK )
@@ -56,6 +48,7 @@ local function GetMovementVector( cmd )
 	return Vector( Forward, Right, 0 ):GetNormal()
 	
 end
+
 
 -- Calculate New Velocity
 local function CalcGrapple( ply, mv, cmd, trace, tickdata, MoveVec )
@@ -67,12 +60,14 @@ local function CalcGrapple( ply, mv, cmd, trace, tickdata, MoveVec )
 	local SwingDist = tickdata.SwingDistance
 	local Gravity = cvars.Number( "sv_gravity" ) * FrameTime()
 	
+	Velocity = Velocity + MoveVec
+	
 	-- Fix any incorrect grapple locations
 	local GrapLocation = ply.GrappleLocation
 	
 	if CLIENT and ply == LocalPlayer() and GrapLocation and GrapLocation != SwingPos then
 	
-		SwingPos = GrapLocation
+		//SwingPos = GrapLocation
 		
 	end
 	
@@ -87,16 +82,21 @@ local function CalcGrapple( ply, mv, cmd, trace, tickdata, MoveVec )
 		SwingDist = math.Clamp( CableLength, 100, MaxCableLength )
 		
 	end
-
+	
+	-- Change velocity direction
 	local Elastic = math.Clamp( ( CableLength - SwingDist ) * 0.01, 0, 1 )
 	local Reflection = ReflectVector( Velocity, CableDirection ) * -1
 	
-	Velocity = Velocity + MoveVec
+	
 	local NewVelocity = Reflection + Vector( 0, 0, Gravity )
 	
 	if Velocity:GetNormal():Dot( CableDirection ) > 0 then
 	
 		mv:SetVelocity( LerpVector( Elastic, Velocity, NewVelocity ) )
+	
+	else
+	
+		mv:SetVelocity( Velocity )
 		
 	end
 	
@@ -104,7 +104,6 @@ local function CalcGrapple( ply, mv, cmd, trace, tickdata, MoveVec )
 	local TD = {}
 	TD.SwingDistance = SwingDist
 	TD.Velocity = mv:GetVelocity() //- MoveVec
-	TD.Origin = mv:GetOrigin()
 	TD.Trace = trace
 	
 	return TD
@@ -114,6 +113,8 @@ end
 -- Sensitive Prediction stuff
 function GM:SetupMove( ply, mv, cmd )
 	
+	if CLIENT and ply != LocalPlayer() then return end
+	
 	if !ply.TickData then ply.TickData = {} end
 	local TD = ply.TickData[ cmd:TickCount() ]
 	
@@ -122,7 +123,6 @@ function GM:SetupMove( ply, mv, cmd )
 		if TD then
 			
 			mv:SetVelocity( TD.Velocity )
-			mv:SetOrigin( TD.Origin )
 			
 		end
 		
@@ -131,9 +131,9 @@ function GM:SetupMove( ply, mv, cmd )
 	end
 	
 	-- Keep table clean
-	if ply.TickData[ cmd:TickCount()-100 ] then
+	if ply.TickData[ cmd:TickCount()-50 ] then
 	
-		table.remove( ply.TickData, cmd:TickCount()-100 )
+		table.remove( ply.TickData, cmd:TickCount()-50 )
 	
 	end
 	
@@ -148,17 +148,29 @@ function GM:SetupMove( ply, mv, cmd )
 		MoveVec = GetMovementVector( cmd )
 		local Ang = Angle( 0, ply:EyeAngles().y, 0 )
 		local Speed = 400
-		local Decend = 0	
+		local Decend = 0
 		
-		if cmd:KeyDown( IN_SPEED ) then
-			
-			Speed = AirSpeed
+		local Velocity = mv:GetVelocity()
+		local CurrentAirSpeed = ( Velocity + MoveVec ):Length2D()
+		local CurrentDecendSpeed = Velocity.z * -1
+		
+		if CurrentAirSpeed < MaxAirSpeed then
+		
+			if cmd:KeyDown( IN_SPEED ) then
+				
+				Speed = AirAccelerate
+				
+			end
+		
+		else
+		
+			Speed = 0
 			
 		end
 		
-		if cmd:KeyDown( IN_DUCK ) then
+		if cmd:KeyDown( IN_DUCK ) and CurrentDecendSpeed < MaxDecendSpeed then
 			
-			Decend = DecendSpeed
+			Decend = DecendAccelerate
 			
 		end
 		
@@ -207,6 +219,10 @@ function GM:SetupMove( ply, mv, cmd )
 	else
 	
 		ply.GrappleLocation = nil
+		
+		local NewVelocity = mv:GetVelocity() + MoveVec
+		mv:SetVelocity( NewVelocity )
+		ply.TickData[ cmd:TickCount() ] = { Velocity = NewVelocity }
 		
 		if SERVER then
 			

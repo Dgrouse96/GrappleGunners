@@ -10,6 +10,9 @@ local Files = {
 	
 	"network/cl_network",
 	"client/grapplecable",
+	
+	"anims/posemaker",
+	"anims/poseblender",
 }
 
 for k,v in pairs(Files) do
