@@ -3,10 +3,10 @@
 --
 
 local MaxCableLength = 1500
-local AirAccelerate = 1500
-local DecendAccelerate = 1200
-local MaxAirSpeed = 600
-local MaxDecendSpeed = 800
+local AirAccelerate = 1000
+local DecendAccelerate = 1500
+local MaxAirSpeed = 800
+local MaxDecendSpeed = 1000
 
 -- Trace to find hook location, trace line before trace sphere
 local function HookTrace( ply, debugtime )
@@ -51,11 +51,10 @@ end
 
 
 -- Calculate New Velocity
-local function CalcGrapple( ply, mv, cmd, trace, tickdata, MoveVec )
+local function CalcGrapple( ply, mv, cmd, trace, tickdata, MoveVec, Velocity )
 	
 	-- Grab Variables
 	local SwingPos = trace.HitPos
-	local Velocity = mv:GetVelocity()
 	local Origin = mv:GetOrigin()
 	local SwingDist = tickdata.SwingDistance
 	local Gravity = cvars.Number( "sv_gravity" ) * FrameTime()
@@ -85,10 +84,10 @@ local function CalcGrapple( ply, mv, cmd, trace, tickdata, MoveVec )
 	
 	-- Change velocity direction
 	local Elastic = math.Clamp( ( CableLength - SwingDist ) * 0.01, 0, 1 )
-	local Reflection = ReflectVector( Velocity, CableDirection ) * -1
+	local Reflection = ReflectVector( Velocity, CableDirection ) * -1.001
 	
 	
-	local NewVelocity = Reflection + Vector( 0, 0, Gravity )
+	local NewVelocity = Reflection + Vector( 0, 0, -Gravity )
 	
 	if Velocity:GetNormal():Dot( CableDirection ) > 0 then
 	
@@ -141,6 +140,7 @@ function GM:SetupMove( ply, mv, cmd )
 	-- Last Tick Data
 	local LTD = ply.TickData[ cmd:TickCount()-1 ]
 	local MoveVec = Vector()
+	local CurrentVelocity = mv:GetVelocity()
 	
 	-- Aircontrol
 	if !ply:IsOnGround() then
@@ -149,23 +149,24 @@ function GM:SetupMove( ply, mv, cmd )
 		local Ang = Angle( 0, ply:EyeAngles().y, 0 )
 		local Speed = 400
 		local Decend = 0
+		local MaxSpeed = false
 		
-		local Velocity = mv:GetVelocity()
-		local CurrentAirSpeed = ( Velocity + MoveVec ):Length2D()
-		local CurrentDecendSpeed = Velocity.z * -1
+		local CurrentAirSpeed = ( CurrentVelocity + MoveVec ):Length2D()
+		local CurrentDecendSpeed = CurrentVelocity.z * -1
 		
 		if CurrentAirSpeed < MaxAirSpeed then
 		
 			if cmd:KeyDown( IN_SPEED ) then
 				
 				Speed = AirAccelerate
-				
+					
 			end
-		
+				
 		else
-		
+				
 			Speed = 0
-			
+			MaxSpeed = true
+				
 		end
 		
 		if cmd:KeyDown( IN_DUCK ) and CurrentDecendSpeed < MaxDecendSpeed then
@@ -175,6 +176,16 @@ function GM:SetupMove( ply, mv, cmd )
 		end
 		
 		MoveVec:Rotate( Ang )
+		
+		-- At max speed, allow player to change direction (BROKEN)
+		if MaxSpeed then
+		
+			local NewVel = MoveVec *  CurrentAirSpeed
+			NewVel.z = CurrentVelocity.z
+			//CurrentVelocity = LerpVector( FrameTime()*5, CurrentVelocity, NewVel )
+			
+		end
+		
 		MoveVec = MoveVec * Speed * FrameTime()
 		MoveVec = MoveVec + Vector( 0, 0, - Decend ) * FrameTime()
 		
@@ -188,7 +199,7 @@ function GM:SetupMove( ply, mv, cmd )
 		if LTD and LTD.Trace then
 			
 			trace = LTD.Trace
-			TD = CalcGrapple( ply, mv, cmd, trace, LTD, MoveVec )
+			TD = CalcGrapple( ply, mv, cmd, trace, LTD, MoveVec, CurrentVelocity )
 			
 		else
 			
@@ -199,7 +210,7 @@ function GM:SetupMove( ply, mv, cmd )
 				
 				TD = {}
 				TD.SwingDistance = ( mv:GetOrigin() - trace.HitPos ):Length()
-				TD = CalcGrapple( ply, mv, cmd, trace, TD, MoveVec )
+				TD = CalcGrapple( ply, mv, cmd, trace, TD, MoveVec, CurrentVelocity )
 				
 				-- Use this for drawing cable
 				ply.GrappleLocation = trace.HitPos
@@ -220,7 +231,7 @@ function GM:SetupMove( ply, mv, cmd )
 	
 		ply.GrappleLocation = nil
 		
-		local NewVelocity = mv:GetVelocity() + MoveVec
+		local NewVelocity = CurrentVelocity + MoveVec
 		mv:SetVelocity( NewVelocity )
 		ply.TickData[ cmd:TickCount() ] = { Velocity = NewVelocity }
 		
@@ -229,6 +240,36 @@ function GM:SetupMove( ply, mv, cmd )
 			sendEntity( "RemoveGrapple", ply, EveryoneBut( ply ) )
 			
 		end
+
+	end
+	
+end
+
+for i=1, 4 do
+	
+	util.PrecacheSound( "physics/concrete/boulder_impact_hard" .. i .. ".wav" )
+	
+end
+
+function GM:OnPlayerHitGround( ply, inWater, onFloater, speed )
+	
+	if !IsFirstTimePredicted() then return end
+	
+	if speed > 1000 then
+		
+		-- Decal
+		local PlyPos = ply:GetPos()
+		util.Decal( "GG-GroundSlam", PlyPos, PlyPos - Vector( 0, 0, 20 ) )
+		
+		-- Sound
+		local SoundToPlay = "physics/concrete/boulder_impact_hard" .. math.random( 1, 4 ) .. ".wav"
+		EmitSound( SoundToPlay, PlyPos, ply:EntIndex(), CHAN_BODY )
+		
+		-- Temporary particle
+		local smoke = EffectData()
+		smoke:SetOrigin( PlyPos + Vector( 0, 0, 10 ) )
+		smoke:SetScale( 500 )
+		util.Effect( "ThumperDust", smoke )
 
 	end
 	

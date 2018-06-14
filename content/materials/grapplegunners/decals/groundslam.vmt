@@ -1,0 +1,5 @@
+"DecalModulate"
+{
+	"$basetexture" "grapplegunners\decals\groundslam"
+	"$decalscale" 0.18
+}
