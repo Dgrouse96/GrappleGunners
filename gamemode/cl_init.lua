@@ -12,3 +12,21 @@ function GM:PostDrawViewModel( vm, ply, weapon )
 	end
 
 end
+
+--
+-- Hide Default HUD
+--
+
+local Hide = {
+	["CHudHealth"] = true,
+	["CHudBattery"] = true,
+	["CHudAmmo"] = true,
+	["CHudCrosshair"] = true,
+	["CHudSecondaryAmmo"] = true,
+}
+
+hook.Add( "HUDShouldDraw", "HideHUD", function( name )
+
+	if ( Hide[ name ] ) then return false end
+
+end )

@@ -10,6 +10,14 @@ local Files = {
 	
 	"network/cl_network",
 	"client/grapplecable",
+	"client/draw",
+	"client/widget",
+	"client/hud",
+	
+	"client/widgets/energybar",
+	"client/widgets/crosshair",
+	
+	"client/huds/gameplayhud",
 	
 	"anims/posemaker",
 	"anims/poseblender",

@@ -183,7 +183,7 @@ function OpenBonePanel()
 	Frame.OnRemove = function() Frame2:Remove() ply.MakingPose = false end
 	Frame2.OnRemove = function() Frame:Remove() ply.MakingPose = false end
 end
-concommand.Add("editbones",OpenBonePanel)
+concommand.Add( "editbones", OpenBonePanel )
 
 
 -- Put player in TPose
@@ -199,7 +199,7 @@ local function TPose()
 	end
 	
 end
-concommand.Add("resetpose",TPose)
+concommand.Add( "resetpose", TPose )
 
 --
 -- SAVING / LOADING
@@ -234,7 +234,55 @@ local function comSavePose( _, _, args )
 	SavePose( args[1] )
 	
 end
-concommand.Add("savepose",comSavePose)
+concommand.Add( "savepose", comSavePose )
+
+
+local function GetChildren( ply, bone )
+	
+	
+	local Children = { bone }
+	
+	for k,v in pairs( ply:GetChildBones( bone ) ) do
+		
+		table.Add( Children, GetChildren( ply, v ) )
+		
+	end
+	
+	return Children
+	
+end
+
+function SaveLimb( name, bone )
+	
+	if !name then print( "Please supply a file name" ) return end
+	if !bone then print( "Please supply a bone ID" ) return end
+	
+	local ply = LocalPlayer()
+	local bones = {}
+	
+	for k,v in pairs( GetChildren( ply, bone ) ) do
+		
+		local pos = ply:GetManipulateBonePosition( v )
+		local ang = ply:GetManipulateBoneAngles( v )
+		bones[v] = { p = pos, a = ang }
+		
+	end
+	
+	local json = util.TableToJSON( bones )
+	file.CreateDir( "posemaker/poses" )
+	file.Write( "posemaker/poses/"..name..".txt", json )
+	
+	print( "Saved pose: "..name..".txt" )
+	
+end
+
+
+local function comSaveLimb( _, _, args )
+
+	SaveLimb( args[1], tonumber(args[2]) )
+	
+end
+concommand.Add( "savelimb", comSaveLimb )
 
 
 function LoadPose( name )
@@ -244,7 +292,7 @@ function LoadPose( name )
 	if !read then print( "Can't find file: "..name..".txt" ) return end
 	
 	local ply = LocalPlayer()
-	local bones = util.JSONToTable(read)
+	local bones = util.JSONToTable( read )
 	
 	for k,v in pairs( bones ) do
 		
@@ -261,7 +309,7 @@ local function comLoadPose( _, _, args )
 	LoadPose( args[1] )
 	
 end
-concommand.Add("loadpose",comLoadPose)
+concommand.Add( "loadpose", comLoadPose )
 
 
 -- Use this for retargetting
@@ -290,7 +338,7 @@ local function comSaveBones( _, _, args )
 	SaveBoneNames( args[1] )
 	
 end
-concommand.Add("savebones",comSaveBones)
+concommand.Add( "savebones", comSaveBones )
 
 
 -- Retarget bone IDs

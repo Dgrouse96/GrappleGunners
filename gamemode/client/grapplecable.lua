@@ -5,13 +5,37 @@ local function DrawGrapple()
 	render.SetMaterial( MAT_Cable )
 	
 	for _,ply in pairs( player.GetAll() ) do
-	
+		
 		local GL = ply.GrappleLocation
 		
-		if GL then
+		if ply:Alive() and GL then
+			
+			local Pos = Vector()
+			
+			if ply == LocalPlayer() then
+				
+				local M = Matrix()
+				M:Rotate( ply:EyeAngles() )
+				M:Translate( Vector( 10, 10, -40 ) )
+				Pos = ply:EyePos() + M:GetTranslation()
+				
+			else
+			
+				local Hand = ply:GetBoneMatrix( 16 )
+				
+				if Hand then
+					Hand:Translate( Vector( 2.5, -1.2, 1 ) )
+					Pos = Hand:GetTranslation()
+				end
+				
+			end
+
+			render.DrawBeam( Pos, GL, 2, 0, 1, Color(10,10,10) )
+			
+		else
 		
-			render.DrawBeam( ply:GetPos(), GL, 3, 0, 1, Color(10,10,10) )
-		
+			ply.GrappleLocation = nil
+			
 		end
 		
 	end

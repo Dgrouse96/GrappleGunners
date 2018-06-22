@@ -3,8 +3,8 @@
 --
 
 -- Cache spheres for later traces
-local Radii = { 
-	//[25] = "models/hunter/misc/sphere025x025.mdl",
+local Radii = {
+	[25] = "models/hunter/misc/sphere025x025.mdl",
 	//[75] = "models/hunter/misc/sphere075x075.mdl",
 	//[100] = "models/hunter/misc/sphere1x1.mdl",
 	[200] = "models/hunter/misc/sphere2x2.mdl",
@@ -37,6 +37,7 @@ local function SpawnSpheres()
 			sphere = ents.Create( "spheretrace" )
 			sphere:SetModel( model )
 			sphere:DrawShadow( false )
+			sphere:SetPos( ents.FindByClass( "info_player_start" )[1]:GetPos() )
 			
 			Spheres[rad] = sphere
 			
@@ -86,7 +87,7 @@ end
 util.spheretrace = function( tracedata, findhitpos, debugtime )
 	
 	local sphere = Spheres[ tracedata.radius ]
-	if !sphere then return end
+	if !IsValid( sphere ) then return end
 	
 	local trace = util.TraceEntity( tracedata, sphere )
 	

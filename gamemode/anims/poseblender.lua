@@ -1,19 +1,38 @@
 --
 -- Blend poses to make anims
 --
+// Poses need to be object based, I think this produces a lot of garbage.
+
+local POSES = {}
 
 local function LoadRetarget( name )
 	
 	local read = file.Read( "posemaker/retarget/"..name..".txt" )
-	if read then return util.JSONToTable( read ) end
-	return {}
+	if read then
+		
+		POSES[ name ] = util.JSONToTable( read )
+		
+	end
 	
 end
 
 local function LoadPose( name )
 	
 	local read = file.Read( "posemaker/poses/"..name..".txt" )
-	if read then return util.JSONToTable( read ) end
+	
+	if read then 
+		
+		POSES[ name ] = util.JSONToTable( read ) 
+		
+	end
+	
+end
+
+local function GetPose( name )
+	
+	local Pose = POSES[ name ]
+	if Pose then return table.Copy( Pose ) end
+	
 	return {}
 	
 end
@@ -22,16 +41,27 @@ end
 -- Load poses then use them later
 --
 
-local Idle1,Sprint1,Sprint2,Sprint3,Sprint4 = {},{},{},{},{}
+local Female1 = {}
 
 local function StorePoses()
 	
-	Kick = LoadPose( "kick" )
-	Sprint1 = LoadPose( "sprint1" )
-	Sprint2 = LoadPose( "sprint2" )
-	Sprint3 = LoadPose( "sprint3" )
-	Sprint4 = LoadPose( "sprint4" )
-	Idle1 = LoadPose( "idle1" )
+	LoadPose( "sprint1" )
+	LoadPose( "sprint2" )
+	LoadPose( "sprint3" )
+	LoadPose( "sprint4" )
+	
+	LoadPose( "idle1" )
+	LoadPose( "fallidle1" )
+	
+	LoadPose( "gunaim_low" )
+	LoadPose( "gunaim_mid" )
+	LoadPose( "gunaim_high" )
+	
+	LoadPose( "swingRM" )
+	LoadPose( "swingLMB" )
+	
+	LoadPose( "swingMLB" )
+	LoadPose( "swingMHB" )
 	
 	Female1 = LoadRetarget( "male1-female1" )
 	
@@ -92,20 +122,76 @@ local function ApplyPose( ply, Pose )
 	
 end
 
+-- Good for limbs ( Gun aiming / Grappling )
+local function OverrideBones( ply, Pose, Override )
+	
+	if !Pose then Pose = {} end
+	
+	for k,v in pairs( Override ) do
+		
+		Pose[k] = v
+		
+	end
+	
+	return Pose
+	
+end
+
 -- Lerp 2 poses
-local function BlendPoses( ply, Pose1, Pose2, Alpha )
+local function BlendPoses( Pose1, Pose2, Alpha )
 
 	local ReturnValue = {}
 	
-	for i=0, ply:GetBoneCount()-1 do
+	for k,v in pairs( Pose1 ) do
 		
-		local v1 = TidyBoneData( Pose1[i] )
-		local v2 = TidyBoneData( Pose2[i] )
+		local v1 = TidyBoneData( v )
+		local v2 = TidyBoneData( Pose2[k] )
 		
-		ReturnValue[i] = { 
+		ReturnValue[k] = { 
 			p = LerpVector( Alpha, v1.p, v2.p ), 
 			a = LerpAngle( Alpha, v1.a, v2.a ),
 		}
+		
+	end
+	
+	for k,v in pairs( Pose2 ) do
+		
+		if !ReturnValue[k] then
+			
+			ReturnValue[k] = v
+			
+		end
+		
+	end
+	
+	return ReturnValue
+	
+end
+
+
+local function AddPoses( Pose1, Pose2 )
+
+	local ReturnValue = {}
+	
+	for k,v in pairs( Pose1 ) do
+		
+		local v1 = TidyBoneData( v )
+		local v2 = TidyBoneData( Pose2[k] )
+		
+		ReturnValue[k] = { 
+			p = v1.p + v2.p, 
+			a = v1.a + v2.a,
+		}
+		
+	end
+	
+	for k,v in pairs( Pose2 ) do
+		
+		if !ReturnValue[k] then
+			
+			ReturnValue[k] = v
+			
+		end
 		
 	end
 	
@@ -127,6 +213,7 @@ local function AdditiveBone( Pose, Bone, Data )
 	
 end
 
+-- Replace a single bone's transform
 local function ReplaceBone( Pose, Bone, Data )
 	
 	if !Data then return Pose end
@@ -138,9 +225,12 @@ local function ReplaceBone( Pose, Bone, Data )
 	
 end
 
+
 --
 -- Running Animation
 --
+
+local Interval = 0
 
 local Power = 1.5
 
@@ -149,39 +239,74 @@ local function Anim_Run( ply )
 	local Pose = {}
 	
 	local Vel = ply:GetVelocity() Vel.z = 0
-	local Speed = Vel:Length2D()/50
+	local Speed = math.Clamp( Vel:Length2D()/50, 2, 10 )
 	
 	local Direction = 1
 	if Vel:Dot( ply:GetForward() ) < 0 then Direction = -1 end
 	
-	if !ply.ARunTime then ply.ARunTime = 0 end
-	if !ply.ASmoothRun then ply.ASmoothRun = 0 end
+	if !ply.ARunTime or !ply:OnGround() then ply.ARunTime = 1 end
+	if !ply.A_SmoothRun then ply.A_SmoothRun = 0 end
 
-	ply.ARunTime = ply.ARunTime + FrameTime() * Speed * Direction
+	ply.ARunTime = ply.ARunTime + Interval * Speed * Direction
 	local Weight = ply.ARunTime % 4
 	
 	if inrange( Weight, 0, 1 ) then
 	
-		Pose = BlendPoses( ply, Sprint1, Sprint2, ease( Weight, Power, 1 ) )
+		Pose = BlendPoses( GetPose( "sprint1" ), GetPose( "sprint2" ), ease( Weight, Power, 1 ) )
 		
 	elseif inrange( Weight, 1, 2 ) then
 	
-		Pose = BlendPoses( ply, Sprint2, Sprint3, ease( inverselerp( Weight, 1, 2 ), Power, 0.1 ) )
+		Pose = BlendPoses( GetPose( "sprint2" ), GetPose( "sprint3" ), ease( inverselerp( Weight, 1, 2 ), Power, 0.1 ) )
 		
 	elseif inrange( Weight, 2, 3 ) then
 	
-		Pose = BlendPoses( ply, Sprint3, Sprint4, ease( inverselerp( Weight, 2, 3 ), Power, 1 ) )
+		Pose = BlendPoses( GetPose( "sprint3" ), GetPose( "sprint4" ), ease( inverselerp( Weight, 2, 3 ), Power, 1 ) )
 		
 	elseif inrange( Weight, 3, 4 ) then
 	
-		Pose = BlendPoses( ply, Sprint4, Sprint1, ease( inverselerp( Weight, 3, 4 ), Power, 0.1 ) )
+		Pose = BlendPoses( GetPose( "sprint4" ), GetPose( "sprint1" ), ease( inverselerp( Weight, 3, 4 ), Power, 0.1 ) )
 	
 	end
 	
-	ply.ASmoothRun = Lerp( FrameTime() * 10, ply.ASmoothRun, Speed )
-	Pose = BlendPoses( ply, Idle1, Pose, math.Clamp( inverselerp( ply.ASmoothRun, 0, 1 ), 0, 1.3 ) )
+	ply.A_SmoothRun = Lerp( Interval * 10, ply.A_SmoothRun, math.Clamp( Vel:Length2D()/50, 0, 10 ) )
+	ply.A_SmoothRun = math.Clamp( ply.A_SmoothRun, 0, 1.3 )
+	
+	Pose = BlendPoses( GetPose( "idle1" ), Pose, ply.A_SmoothRun )
 	
 	return Pose
+	
+end
+
+
+--
+-- Falling anim
+--
+
+local function Anim_Fall()
+	
+	return GetPose( "fallidle1" )
+	
+end
+
+local function Anim_BaseLocomotion( ply )
+	
+	if !ply.A_BlendFall then ply.A_BlendFall = 0 end
+	
+	ply.A_BlendFall = Lerp( Interval * 15, ply.A_BlendFall, Either( ply:OnGround(), 1, 0 ) )
+	
+	-- Don't blend in these cases
+	if ply.A_BlendFall > 0.999 then
+	
+		return Anim_Run( ply )
+	
+	elseif ply.A_BlendFall < 0.001 then
+	
+		return Anim_Fall()
+		
+	end
+	
+	
+	return BlendPoses( Anim_Fall(), Anim_Run( ply ), ply.A_BlendFall )
 	
 end
 
@@ -192,38 +317,231 @@ end
 
 local function RunTilt( ply )
 	
-	if !ply.SmoothTilt then ply.SmoothTilt = 0 end
-	if !ply.LastVelocity then ply.LastVelocity = Vector() end
+	if !ply.A_SmoothTilt then ply.A_SmoothTilt = 0 end
+	if !ply.A_LastVelocity then ply.A_LastVelocity = Vector() end
 	
 	local Velocity = ply:GetVelocity():GetNormalized()
-	local Tilt = math.Clamp( Velocity:Cross( ply.LastVelocity ).z * 600, -60, 60 )
+	local Tilt = math.Clamp( Velocity:Cross( ply.A_LastVelocity ).z * 600, -30, 30 )
 	
-	ply.SmoothTilt = Lerp( FrameTime() * 2, ply.SmoothTilt, Tilt )
-	
-	ply.LastVelocity = Velocity
+	ply.A_SmoothTilt = Lerp( Interval * 2, ply.A_SmoothTilt, Tilt )
+	ply.A_LastVelocity = Velocity
 	
 	return { 
 		p = Vector(), 
-		a = Angle( 0, ply.SmoothTilt, 0 )
+		a = Angle( 0, ply.A_SmoothTilt * 2, 0 )
 	}
 	
 end
 
+
+--
+-- Orient Player to Velocity Direction
+--
+
+local function RunDirection( ply )
+	
+	if !ply.A_SmoothRunAng then ply.A_SmoothRunAng = 0 end
+	
+	local Velocity = ply:GetVelocity():GetNormalized()
+	Velocity.z = 0
+	
+	local Vel = Velocity:Angle()
+	local Yaw = ply:GetAngles().y
+	local Ang = Vel.y - Yaw
+	
+	if Velocity:Length() > 0.1 then
+		
+		-- Flip direction for reverse run
+		if ( Ang > 95 and Ang < 260 and Ang > 100 ) then
+			
+			Ang = Ang+180
+			
+		end
+	
+	else
+	
+		Ang = 0
+	
+	end
+	
+	ply.A_SmoothRunAng = LerpAngle( Interval * 10, Angle( 0, ply.A_SmoothRunAng, 0 ), Angle( 0, Ang, 0 ) ).y
+	
+	return { 
+		p = Vector(), 
+		a = Angle( ply.A_SmoothRunAng, 0, 0 )
+	}
+	
+end
+
+-- Rotates spine to face aim direction
+local function Blend_RunDirection( ply, Pose )
+	
+	Pose = AdditiveBone( Pose, 0, RunDirection( ply ) )
+	
+	local Ang = math.Clamp( ply.A_SmoothRunAng, -90, 90 )
+	local FixYaw = { 
+		p = Vector(), 
+		a = Angle( 0, 0, -Ang/4 )
+	}
+	
+	for i=1,4 do
+		
+		Pose = AdditiveBone( Pose, i, FixYaw )
+		
+	end
+	
+	return Pose
+	
+end
+
+
+--
+-- Weapon Aiming
+--
+
+local function WeaponAim( ply )
+	
+	local Pose = {}
+	local Smoothrun = ply.A_SmoothRun or 0
+	local Pitch = ply:EyeAngles().p
+	
+	local Pitch = Pitch + Either( ply:OnGround(), Lerp( Smoothrun, 0, -35 ), -15 )
+	
+	//Pose = AdditiveBone( Pose, 0, RunTilt( ply ) )
+	
+	if Pitch > 0 then
+	
+		return BlendPoses( GetPose( "gunaim_mid" ), GetPose( "gunaim_low" ), Pitch/90 )
+	
+	end
+		
+	return BlendPoses( GetPose( "gunaim_mid" ), GetPose( "gunaim_high" ), -Pitch/85 )
+	
+end
+
+
+--
+-- Grapple Aiming
+--
+
+local function GrappleAim( ply )
+	
+	if ply.GrappleLocation then
+	
+		local Dir = DirectionVector( ply:EyePos(), ply.GrappleLocation )
+		local Ang = Angle( 0, ply:EyeAngles().y+90, 0 ) - Dir:Angle()
+		
+		ply.A_GrappleAngle = Ang
+		if !ply.A_GrappleYaw then ply.A_GrappleYaw = 0 end
+		if !ply.A_GrapplePitch then ply.A_GrapplePitch = 0 end
+		
+	end
+	
+	local Ang = ply.A_GrappleAngle
+	Ang:Normalize()
+	
+	// print( Ang )
+	local YawAlpha = inverselerp( Ang.y, 300, -50 )
+	local PitchAlpha = inverselerp( Ang.p, -45, 45 )
+	
+	ply.A_GrappleYaw = Lerp( Interval * 10, ply.A_GrappleYaw, YawAlpha )
+	ply.A_GrapplePitch = Lerp( Interval * 10, ply.A_GrapplePitch, PitchAlpha )
+	
+	local PoseYaw = BlendPoses( GetPose( "swingRM" ), GetPose( "swingLMB" ), ply.A_GrappleYaw  )
+	local PosePitch = BlendPoses( GetPose( "swingML" ), GetPose( "swingMH" ), ply.A_GrapplePitch  )
+	
+	//PoseYaw = AdditiveBone( PoseYaw, 14, PosePitch[14] )
+	//PoseYaw = AdditiveBone( PoseYaw, 15, PosePitch[15] )
+	
+	return AddPoses( PoseYaw, PosePitch )
+	
+end
+
+local function Blend_Grapple( ply, Pose )
+	
+	if !ply.A_BlendGrapple then ply.A_BlendGrapple = 0 end
+	
+	local TargetBlend = 0
+	if ply.GrappleLocation then TargetBlend = 1 end
+	
+	ply.A_BlendGrapple = Lerp( Interval * 15, ply.A_BlendGrapple, TargetBlend )
+	
+	-- Don't blend in these cases
+	if ply.A_BlendGrapple > 0.999 then
+	
+		return OverrideBones( ply, Pose, GrappleAim( ply ) )
+	
+	elseif ply.A_BlendGrapple < 0.001 then
+	
+		return Pose
+		
+	end
+	
+	local OldPose = table.Copy( Pose )
+	return BlendPoses( OldPose, OverrideBones( ply, Pose, GrappleAim( ply ) ), ply.A_BlendGrapple )
+	
+end
+
+
 --
 -- Main Anim Function
 --
+
 function RunPoseAnims( ply )
+		
+	-- Running/Falling Anim
+	local Pose = Anim_BaseLocomotion( ply )
 	
-	for k,ply in pairs( player.GetAll() ) do
+	-- Tilt into turn
+	Pose = AdditiveBone( Pose, 0, RunTilt( ply ) )
 	
-		local Pose = Anim_Run( ply )
-		Pose = AdditiveBone( Pose, 0, RunTilt( ply ) )
-		ApplyPose( ply, Pose )
+	-- Rotate to move direction ( Twists hips back to face aim direction )
+	Pose = Blend_RunDirection( ply, Pose )
+	
+	-- Aim Weapon Arm
+	if IsValid( ply:GetActiveWeapon() ) then
+		
+		Pose = OverrideBones( ply, Pose, WeaponAim( ply ) )
 		
 	end
-
+	
+	-- Aim Grapple Arm
+	Pose = Blend_Grapple( ply, Pose )
+	
+	-- Apply Pose to Player
+	ApplyPose( ply, Pose )
+	
 end
-hook.Add( "Think", "RunPoseAnims", RunPoseAnims )
+
+
+local function ThinkPoseAnims()
+	
+	Interval = FrameTime()
+	RunPoseAnims( LocalPlayer() )
+	
+end
+hook.Add( "Think", "RunPoseAnims", ThinkPoseAnims )
+//hook.Remove( "Think", "RunPoseAnims" )
+
+
+local function TickPoseAnims()
+	
+	for k,ply in pairs( player.GetAll() ) do
+		
+		if ply != LocalPlayer() then
+			
+			Interval = engine.TickInterval()
+			RunPoseAnims( ply )
+			
+		end
+		
+	end
+	
+end
+hook.Add( "Tick", "RunPoseAnims", TickPoseAnims )
+
+concommand.Add( "checkposes", function() PrintTable( POSES ) end )
+
 
 
 --
@@ -234,10 +552,23 @@ local function MyCalcView( ply, pos, angles, fov )
 
 	local view = {}
 	
-	
-	view.origin = pos + Vector(0,0,-20) - angles:Forward()*100
+	//view.origin = pos + Vector( 0, 0, 40 ) + angles:Forward() * 150
 	view.angles = angles
 	
+	local trace = {
+		start = pos, 
+		endpos = pos + Vector( 0, 0, 10 ) - angles:Forward() * 100,
+		mask = MASK_SOLID_BRUSHONLY,
+		radius = 25
+	}
+	
+	local sphere = util.spheretrace( trace, false )
+	
+	if sphere then
+	
+		view.origin = sphere.HitPos
+		
+	end
 	
 	/*
 	view.origin = pos + Vector(0,0,-20) + ( angles:Forward()*100 )

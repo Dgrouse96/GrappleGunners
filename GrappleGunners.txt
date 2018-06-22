@@ -2,5 +2,6 @@
 {
 	"base"		"base"
 	"title"		"Grapple Gunners"
+	"maps"		"^gr_"
 	"menusystem"	"1"
 }
