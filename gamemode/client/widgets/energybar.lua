@@ -2,7 +2,7 @@
 if Widget_EnergyBar then
 
     Widget_EnergyBar:Kill()
-    Widget_EnergyBar  = nil
+    Widget_EnergyBar = nil
 	
 end
 
@@ -29,6 +29,19 @@ local Translation = {
 	
 }
 
+local Text = {
+	
+	t = "100",
+	x = PosX + 133,
+	y = PosY - 5,
+	f = "EnergyWidget",
+	ax = 1,
+	ay = 0,
+	c = Color( 255, 225, 150, 255 ),
+	
+}
+
+-- Setup UVs
 local Percent = table.Copy( Translation )
 Percent.su = 0
 Percent.sv = 0
@@ -38,6 +51,9 @@ Percent.ev = 1
 Widget_EnergyBar.Amount = table.Copy( Percent )
 Widget_EnergyBar.AmountColour = table.Copy( White )
 Widget_EnergyBar.ActiveColour = table.Copy( White )
+
+
+Widget_EnergyBar.Text = table.Copy( Text )
 
 
 
@@ -70,6 +86,10 @@ function Widget_EnergyBar:Think()
 		
 	end
 	
+	-- Text Amount
+	self.Text.t = tostring( math.ceil( BoostAmount * 100 ) )
+	self.Text.c = LerpColor( BoostAmount, Color( 255, 50, 20, 255 ), Color( 255, 225, 150, 255 ) )
+	
 end
 
 function Widget_EnergyBar:Draw()
@@ -92,5 +112,8 @@ function Widget_EnergyBar:Draw()
 	SetCol( self.ActiveColour )
 	SetMat( Active )
 	DTRectUV( self.Amount )
+	
+	SetCol( self.Text.c )
+	DText( self.Text )
 	
 end

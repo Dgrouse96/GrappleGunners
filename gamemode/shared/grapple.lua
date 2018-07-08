@@ -283,12 +283,16 @@ function GM:SetupMove( ply, mv, cmd )
 				TD = CalcGrapple( ply, mv, cmd, trace, TD, MoveVec, CurrentVelocity )
 				
 				-- Use this for drawing cable
-				ply.GrappleLocation = trace.HitPos
+				local HookData = { ply = ply, pos = trace.HitPos }
 				
 				if SERVER then
 					-- Draw cable for other clients
-					sendTable( "GrappleLocation", { ply = ply, pos = trace.HitPos }, EveryoneBut( ply ) )
+					sendTable( "GrappleLocation", HookData, EveryoneBut( ply ) )
 				
+				else
+				
+					hook.Run( "GrappleLocation", HookData )
+					
 				end
 				
 			end
@@ -300,8 +304,6 @@ function GM:SetupMove( ply, mv, cmd )
 		ply.TickData[ cmd:TickCount() ] = TD
 	
 	else
-	
-		ply.GrappleLocation = nil
 		
 		local NewVelocity = CurrentVelocity + MoveVec
 		mv:SetVelocity( NewVelocity )
@@ -316,6 +318,10 @@ function GM:SetupMove( ply, mv, cmd )
 		if SERVER then
 			
 			sendEntity( "RemoveGrapple", ply, EveryoneBut( ply ) )
+			
+		else
+		
+			hook.Run( "RemoveGrapple", ply )
 			
 		end
 

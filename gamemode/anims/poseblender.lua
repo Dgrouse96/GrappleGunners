@@ -3,28 +3,10 @@
 --
 // Poses need to be object based, I think this produces a lot of garbage.
 
-local POSES = {}
 
-local function LoadRetarget( name )
+local function GetRetarget( name )
 	
-	local read = file.Read( "posemaker/retarget/"..name..".txt" )
-	if read then
-		
-		POSES[ name ] = util.JSONToTable( read )
-		
-	end
-	
-end
-
-local function LoadPose( name )
-	
-	local read = file.Read( "posemaker/poses/"..name..".txt" )
-	
-	if read then 
-		
-		POSES[ name ] = util.JSONToTable( read ) 
-		
-	end
+	return RETARGETS[ name ]
 	
 end
 
@@ -36,39 +18,6 @@ local function GetPose( name )
 	return {}
 	
 end
-
---
--- Load poses then use them later
---
-
-local Female1 = {}
-
-local function StorePoses()
-	
-	LoadPose( "sprint1" )
-	LoadPose( "sprint2" )
-	LoadPose( "sprint3" )
-	LoadPose( "sprint4" )
-	
-	LoadPose( "idle1" )
-	LoadPose( "fallidle1" )
-	
-	LoadPose( "gunaim_low" )
-	LoadPose( "gunaim_mid" )
-	LoadPose( "gunaim_high" )
-	
-	LoadPose( "swingRM" )
-	LoadPose( "swingLMB" )
-	
-	LoadPose( "swingMLB" )
-	LoadPose( "swingMHB" )
-	
-	Female1 = LoadRetarget( "male1-female1" )
-	
-end
-
-StorePoses()
-
 
 -- Match mismatched bone ids and names
 local function RetargetBones( Pose, Retarget )
@@ -109,8 +58,6 @@ end
 local function ApplyPose( ply, Pose )
 	
 	if !Pose then Pose = {} end
-	
-	// Pose = RetargetBones( Pose, Female1 )
 	
 	for i=0, ply:GetBoneCount()-1 do
 		
@@ -321,7 +268,7 @@ local function RunTilt( ply )
 	if !ply.A_LastVelocity then ply.A_LastVelocity = Vector() end
 	
 	local Velocity = ply:GetVelocity():GetNormalized()
-	local Tilt = math.Clamp( Velocity:Cross( ply.A_LastVelocity ).z * 600, -30, 30 )
+	local Tilt = math.Clamp( Velocity:Cross( ply.A_LastVelocity ).z * 500000 * Interval, -20, 20 )
 	
 	ply.A_SmoothTilt = Lerp( Interval * 2, ply.A_SmoothTilt, Tilt )
 	ply.A_LastVelocity = Velocity
@@ -427,33 +374,29 @@ end
 local function GrappleAim( ply )
 	
 	if ply.GrappleLocation then
-	
+		
 		local Dir = DirectionVector( ply:EyePos(), ply.GrappleLocation )
 		local Ang = Angle( 0, ply:EyeAngles().y+90, 0 ) - Dir:Angle()
 		
 		ply.A_GrappleAngle = Ang
-		if !ply.A_GrappleYaw then ply.A_GrappleYaw = 0 end
-		if !ply.A_GrapplePitch then ply.A_GrapplePitch = 0 end
 		
 	end
 	
 	local Ang = ply.A_GrappleAngle
 	Ang:Normalize()
 	
-	// print( Ang )
-	local YawAlpha = inverselerp( Ang.y, 300, -50 )
-	local PitchAlpha = inverselerp( Ang.p, -45, 45 )
+	local Dir = Ang:Forward()
 	
-	ply.A_GrappleYaw = Lerp( Interval * 10, ply.A_GrappleYaw, YawAlpha )
-	ply.A_GrapplePitch = Lerp( Interval * 10, ply.A_GrapplePitch, PitchAlpha )
+	local F = Either( Dir.y > 0, GetPose( "grap-f" ), GetPose( "grap-b" ) )
+	local R = Either( -Dir.x > 0, GetPose( "grap-r" ), GetPose( "grap-l" ) )
+	local U = Either( -Dir.z > 0, GetPose( "grap-u" ), GetPose( "grap-d" ) )
 	
-	local PoseYaw = BlendPoses( GetPose( "swingRM" ), GetPose( "swingLMB" ), ply.A_GrappleYaw  )
-	local PosePitch = BlendPoses( GetPose( "swingML" ), GetPose( "swingMH" ), ply.A_GrapplePitch  )
+	-- Scale
+	local Pose = F
+	local Pose = BlendPoses( Pose, R, math.abs( Dir.x ) )
+	local Pose = BlendPoses( Pose, U, math.abs( Dir.z ) )
 	
-	//PoseYaw = AdditiveBone( PoseYaw, 14, PosePitch[14] )
-	//PoseYaw = AdditiveBone( PoseYaw, 15, PosePitch[15] )
-	
-	return AddPoses( PoseYaw, PosePitch )
+	return Pose
 	
 end
 
@@ -492,11 +435,14 @@ function RunPoseAnims( ply )
 	-- Running/Falling Anim
 	local Pose = Anim_BaseLocomotion( ply )
 	
+	
 	-- Tilt into turn
 	Pose = AdditiveBone( Pose, 0, RunTilt( ply ) )
 	
+	
 	-- Rotate to move direction ( Twists hips back to face aim direction )
 	Pose = Blend_RunDirection( ply, Pose )
+	
 	
 	-- Aim Weapon Arm
 	if IsValid( ply:GetActiveWeapon() ) then
@@ -505,8 +451,10 @@ function RunPoseAnims( ply )
 		
 	end
 	
+	
 	-- Aim Grapple Arm
 	Pose = Blend_Grapple( ply, Pose )
+	
 	
 	-- Apply Pose to Player
 	ApplyPose( ply, Pose )
@@ -521,7 +469,7 @@ local function ThinkPoseAnims()
 	
 end
 hook.Add( "Think", "RunPoseAnims", ThinkPoseAnims )
-//hook.Remove( "Think", "RunPoseAnims" )
+hook.Remove( "Think", "RunPoseAnims" )
 
 
 local function TickPoseAnims()
@@ -530,6 +478,7 @@ local function TickPoseAnims()
 		
 		if ply != LocalPlayer() then
 			
+			//print( DirectionVector( EyePos(), ply:GetPos() ):Dot( EyeVector() ) )
 			Interval = engine.TickInterval()
 			RunPoseAnims( ply )
 			
@@ -539,6 +488,7 @@ local function TickPoseAnims()
 	
 end
 hook.Add( "Tick", "RunPoseAnims", TickPoseAnims )
+hook.Remove( "Tick", "RunPoseAnims" )
 
 concommand.Add( "checkposes", function() PrintTable( POSES ) end )
 
@@ -555,9 +505,13 @@ local function MyCalcView( ply, pos, angles, fov )
 	//view.origin = pos + Vector( 0, 0, 40 ) + angles:Forward() * 150
 	view.angles = angles
 	
+	local M = Matrix()
+	M:Rotate( angles )
+	M:Translate( Vector( -70, 0, 10 ) )
+	
 	local trace = {
 		start = pos, 
-		endpos = pos + Vector( 0, 0, 10 ) - angles:Forward() * 100,
+		endpos = pos + M:GetTranslation(),
 		mask = MASK_SOLID_BRUSHONLY,
 		radius = 25
 	}
@@ -583,4 +537,4 @@ local function MyCalcView( ply, pos, angles, fov )
 	
 end
 hook.Add( "CalcView", "MyCalcView", MyCalcView )
-hook.Remove( "CalcView", "MyCalcView" )
+//hook.Remove( "CalcView", "MyCalcView" )

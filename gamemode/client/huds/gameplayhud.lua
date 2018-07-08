@@ -8,5 +8,5 @@ end
 
 HUD_Gameplay = HUD()
 HUD_Gameplay:AddWidget( "EnergyBar", Widget_EnergyBar )
-HUD_Gameplay:AddWidget( "Crosshair", Widget_Crosshair )
+HUD_Gameplay:AddWidget( "HealthBar", Widget_HealthBar )
 

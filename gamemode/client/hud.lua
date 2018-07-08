@@ -26,7 +26,6 @@ function HUD:GetHidden()
 	
 end
 
--- Add a widget
 function HUD:AddWidget( Name, Widget )
 	
 	Widget.Parent = self
@@ -34,6 +33,17 @@ function HUD:AddWidget( Name, Widget )
 	
 	-- Won't draw if HUD is hidden
 	Widget:Run()
+	
+end
+
+function HUD:RemoveWidget( Name )
+	
+	if self.Widgets[ Name ] then
+		
+		self.Widgets[ Name ]:Kill()
+		self.Widgets[ Name ] = nil
+		
+	end
 	
 end
 
@@ -51,7 +61,12 @@ end
 
 function HUD:Kill()
 	
-	self:SetHidden( true )
+	for k,v in pairs( self.Widgets ) do
+	
+		v:Kill()
+	
+	end
+	
 	self = nil
 	
 end

@@ -40,8 +40,14 @@ function sresy(x)
 	
 end
 
+local None = Material( "vgui/white" )
+
 function SetMat( s )
-	surface.SetMaterial( s )
+	if !s then
+		surface.SetMaterial( None )
+	else
+		surface.SetMaterial( s )
+	end
 end
 
 function SetTex( s )

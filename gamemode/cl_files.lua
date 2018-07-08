@@ -11,16 +11,24 @@ local Files = {
 	"network/cl_network",
 	"client/grapplecable",
 	"client/draw",
+	"client/fonts",
 	"client/widget",
 	"client/hud",
 	
 	"client/widgets/energybar",
-	"client/widgets/crosshair",
+	"client/widgets/healthbar",
+	
+	"client/widgets/shotty_ch",
+	"client/widgets/sniper_ch",
+	"client/widgets/crosshairs",
 	
 	"client/huds/gameplayhud",
 	
+	"anims/poses",
 	"anims/posemaker",
-	"anims/poseblender",
+	//"anims/poseblender",
+	"anims/posemixer",
+	"anims/posestack",
 }
 
 for k,v in pairs(Files) do

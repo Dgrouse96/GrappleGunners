@@ -54,7 +54,6 @@ local function SpawnSpheres()
 		
 		-- Ask for sphere references (Reload requires a delay for ents to spawn)
 		timer.Simple( 1, function() sendRequest( "ReqSphereRef", {} ) end )
-		
 	end
 		
 end
@@ -68,7 +67,8 @@ if SERVER then
 	-- Send sphere references when asked
 	AddRequest( "ReqSphereRef", function( ply )
 		
-		if ply.HasSphereReferences then return end
+		-- Removed so client lua can get spheres
+		//if ply.HasSphereReferences then return end
 		
 		sendTable( "SphereRef", Spheres, ply )
 		ply.HasSphereReferences = true

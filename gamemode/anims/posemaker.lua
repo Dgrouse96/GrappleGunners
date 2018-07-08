@@ -341,6 +341,7 @@ end
 concommand.Add( "savebones", comSaveBones )
 
 
+
 -- Retarget bone IDs
 local function RetargetBones( name, source )
 	
@@ -380,3 +381,106 @@ local function comRetargetBones( _, _, args )
 	
 end
 concommand.Add( "retargetbones", comRetargetBones )
+
+
+
+local function SaveHands( name )
+	
+	if !name then print( "Please supply a file name" ) return end
+	local ply = LocalPlayer()
+	local bones = {}
+	
+	for i=0, ply:GetHands():GetBoneCount() - 1 do
+	
+		bones[i] = ply:GetHands():GetBoneName( i )
+		
+	end
+	
+	local json = util.TableToJSON( bones )
+	file.CreateDir( "posemaker/bones" )
+	file.Write( "posemaker/bones/"..name..".txt", json )
+	
+end
+
+local function comSaveHands( _, _, args )
+	
+	SaveHands( args[1] )
+	
+end
+concommand.Add( "savehands", comSaveHands )
+
+
+local function RetargetHands( name, source )
+	
+	if !name then print( "Please supply a file name" ) return end
+	if !source then print( "Please supply a file name for source bones" ) return end
+	
+	local read = file.Read( "posemaker/bones/"..source..".txt" )
+	if !read then print( "Can't find file: "..source..".txt" ) return end
+	
+	local ply = LocalPlayer()
+	local bones = util.JSONToTable(read)
+	local retarget = {}
+	
+	for id,bonename in pairs( bones ) do
+		
+		for i=0, ply:GetHands():GetBoneCount() - 1 do
+			
+			if string.Right( ply:GetBoneName( i ), 6 ) == string.Right( bonename, 6 ) then
+			
+				retarget[id] = i
+			
+			end
+			
+		end
+		
+	end
+	
+	local json = util.TableToJSON( retarget )
+	file.CreateDir( "posemaker/retarget" )
+	file.Write( "posemaker/retarget/" .. name .. ".txt", json )
+	
+end
+
+local function comRetargetHands( _, _, args )
+	
+	RetargetHands( args[1], args[2] )
+	
+end
+concommand.Add( "retargethands", comRetargetHands )
+
+
+
+-- Copy bone data to clipboard
+local function CopyPose( name, dir )
+	
+	if !dir then dir = "poses" end
+	
+	if !name then print( "Please supply a file name" ) return end
+	local read = file.Read( "posemaker/"..dir.."/"..name..".txt" )
+	if !read then print( "Can't find file: "..name..".txt" ) return end
+	
+	local ply = LocalPlayer()
+	local bones = util.JSONToTable( read )
+	local String = table.ToString( bones, name, false )
+	
+	String = string.Replace( String, name .. "={", "" )
+	String = "[\"" .. name .. "\"]={\n	" .. String
+	
+	SetClipboardText( String )
+	
+end
+
+local function comCopyPose( _, _, args )
+	
+	CopyPose( args[1] )
+	
+end
+concommand.Add( "copypose", comCopyPose )
+
+local function comCopyRetarget( _, _, args )
+	
+	CopyPose( args[1], "retarget" )
+	
+end
+concommand.Add( "copyretarget", comCopyRetarget )
