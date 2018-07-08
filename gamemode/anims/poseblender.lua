@@ -1,4 +1,4 @@
--- !!!!!!!!!!!!! DEPRICATED !!!!!!!!!!!!!
+-- !!!!!!!!!!!!! DEPRECATED !!!!!!!!!!!!!
 --
 -- Blend poses to make anims
 --
