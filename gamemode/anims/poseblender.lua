@@ -1,3 +1,4 @@
+-- !!!!!!!!!!!!! DEPRICATED !!!!!!!!!!!!!
 --
 -- Blend poses to make anims
 --
