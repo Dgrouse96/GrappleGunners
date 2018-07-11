@@ -1,0 +1,23 @@
+"VertexLitGeneric"
+{
+	$basetexture "grapplegunners/models/grapplecable"
+	$model 1
+	
+	"$Length" 10
+	"$UVSize" "[1.0 1.0]"
+	
+	Proxies
+	{
+		Equals
+		{
+			srcVar1 	"$Length"
+			resultVar 	"$UVSize[1]"
+		}
+		TextureTransform
+		{
+			centerVar	"[0.5 1]"
+			scaleVar 	"$UVSize"
+			resultVar	"$basetexturetransform"
+		}
+	}
+}
