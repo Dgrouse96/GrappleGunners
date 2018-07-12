@@ -1,4 +1,4 @@
--- Kill any existing widgets
+-- Kill any existing widgets/huds
 if HUD_Gameplay then
 
     HUD_Gameplay:Kill()

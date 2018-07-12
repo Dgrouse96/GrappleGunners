@@ -36,6 +36,9 @@ local Files = {
 		"shared/spheretrace",
 		"shared/grapple",
 		"shared/grapplelib",
+		
+		"gametype/gamestate",
+		"gametype/gametype",
 	}
 }
 

@@ -29,6 +29,9 @@ local Files = {
 	//"anims/poseblender",
 	"anims/posemixer",
 	"anims/posestack",
+	
+	"gametypes/gamestate",
+	"gametypes/gametype",
 }
 
 for k,v in pairs(Files) do
