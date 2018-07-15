@@ -27,9 +27,9 @@ end
 -- Returns true parent game type is in play
 function GameState:ParentInPlay()
 	
-	if self.Parent and self.Parent.InPlay then return true
+	if self.Parent and self.Parent.InPlay then return true end
 	
-	return end
+	return false
 	
 end
 
@@ -61,10 +61,28 @@ function GameState:RemoveHook( Name )
 end
 
 
+-- Adds all hooks
+function GameState:AddHooks()
+	
+	if self:ParentInPlay() then
+	
+		for Name, Func in pairs( self.Hooks ) do
+			
+			hook.Add( Name, self, Func )
+			
+		end
+		
+	end
+	
+end
+
+
 -- Removes hooks
 function GameState:RemoveHooks()
-
-	for name, _ in pairs( self.Hooks ) do
+	
+	if !self.Hooks then return end
+	
+	for name,_ in pairs( self.Hooks ) do
 		
 		hook.Remove( name, self )
 		

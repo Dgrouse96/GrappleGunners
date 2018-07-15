@@ -32,6 +32,11 @@ local Files = {
 	
 	"gametypes/gamestate",
 	"gametypes/gametype",
+		
+	"gametypes/states/warmup",
+	"gametypes/states/ffa",
+		
+	"gametypes/gametypes/ffa",
 }
 
 for k,v in pairs(Files) do

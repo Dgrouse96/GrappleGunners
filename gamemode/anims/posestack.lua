@@ -106,7 +106,7 @@ function PLY:Anim_RunTilt()
 	if !self.A_LastVelocity then self.A_LastVelocity = Vector() end
 	
 	local Velocity = self:GetVelocity():GetNormalized()
-	local Tilt = math.Clamp( Velocity:Cross( self.A_LastVelocity ).z * 500000 * self.PoseDelta, -20, 20 )
+	local Tilt = math.Clamp( Velocity:Cross( self.A_LastVelocity ).z * 10000 * self.PoseDelta, -20, 20 )
 	
 	self.A_SmoothTilt = Lerp( self.PoseDelta * 2, self.A_SmoothTilt, Tilt )
 	self.A_LastVelocity = Velocity
@@ -342,3 +342,43 @@ local function TickPoseAnims()
 end
 hook.Add( "Tick", "RunPoseAnims", TickPoseAnims )
 //hook.Remove( "Tick", "RunPoseAnims" )
+
+local function MyCalcView( ply, pos, angles, fov )
+
+	local view = {}
+	
+	//view.origin = pos + Vector( 0, 0, 40 ) + angles:Forward() * 150
+	view.angles = angles
+	
+	local M = Matrix()
+	M:Rotate( angles )
+	M:Translate( Vector( -70, 0, 10 ) )
+	
+	local trace = {
+		start = pos, 
+		endpos = pos + M:GetTranslation(),
+		mask = MASK_SOLID_BRUSHONLY,
+		radius = 25
+	}
+	
+	local sphere = util.spheretrace( trace, false )
+	
+	if sphere then
+	
+		view.origin = sphere.HitPos
+		
+	end
+	
+	/*
+	view.origin = pos + Vector(0,0,-20) + ( angles:Forward()*100 )
+	angles.p = -angles.p
+	view.angles = angles +Angle(0,180,0)
+	*/
+	
+	view.fov = fov
+	view.drawviewer = true
+
+	return view
+	
+end
+hook.Add( "CalcView", "MyCalcView", MyCalcView )

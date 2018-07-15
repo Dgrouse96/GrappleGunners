@@ -37,8 +37,13 @@ local Files = {
 		"shared/grapple",
 		"shared/grapplelib",
 		
-		"gametype/gamestate",
-		"gametype/gametype",
+		"gametypes/gamestate",
+		"gametypes/gametype",
+		
+		"gametypes/states/warmup",
+		"gametypes/states/ffa",
+		
+		"gametypes/gametypes/ffa",
 	}
 }
 

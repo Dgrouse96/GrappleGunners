@@ -21,7 +21,7 @@ function GameType:new( Data )
 			Description = "",
 			InPlay = false,
 			CurrentState = nil,
-			NextState = nil
+			NextState = nil,
 			Hooks = {},
 			States = {},
 			
@@ -125,7 +125,7 @@ end
 
 
 -- Leaves current state and starts new state
-function GameType:SetState( NewState )
+function GameType:SetState( NewState, ... )
 	
 	if !self:GetState( NewState ) then return end
 	
@@ -142,19 +142,16 @@ function GameType:SetState( NewState )
 		
 		self:GetState():RemoveHooks()
 	
+	end
 	
 	-- Enter new state
-	else
-		
-		if self:GetState( NewState ).Enter then
-		
-			self:GetState( NewState ):Enter()
-			
-		end
-		
-		self:GetState( NewState ):AddHooks()
+	if self:GetState( NewState ).Enter then
+	
+		self:GetState( NewState ):Enter( ... )
 		
 	end
+	
+	self:GetState( NewState ):AddHooks()
 	
 	
 	-- Fires when a state changes, useful for auto state switching
@@ -164,11 +161,23 @@ function GameType:SetState( NewState )
 		
 	end
 	
+	CurrentState = NewState
+	
 end
 
+
+-- Sets the next state
 function GameType:SetNextState( ID )
 	
 	self.NextState = ID
+	
+end
+
+
+-- Switches to the next state
+function GameType:DoNextState( ... )
+	
+	self:SetState( self.NextState, ... )
 	
 end
 
