@@ -8,31 +8,38 @@ GameType = {}
 GameType.__index = GameType
 
 
+-- ID for server client referencing
+local GameTypeID = 0
+
+
 -- Call function
 function GameType:new( Data )
 	
-	local NewGameType = Data
+	if !Data then Data = {} end
 	
-	if !NewGameType then
+	GameTypeID = GameTypeID + 1
 	
-		NewGameType = {
-			
-			Name = "",
-			Description = "",
-			InPlay = false,
-			CurrentState = nil,
-			NextState = nil,
-			Hooks = {},
-			States = {},
-			
-		}
-		
-	end
+	Data.Name = ""
+	Data.Description = ""
+	Data.ID = GameTypeID
+	Data.InPlay = false
+	Data.CurrentState = nil
+	Data.NextState = nil
+	Data.Hooks = {}
+	Data.States = {}
 	
-	setmetatable( NewGameType, GameType )
-	table.insert( GameTypeRegistry, NewGameType )
+	setmetatable( Data, GameType )
+	GameTypeRegistry[ GameTypeID ] = Data
 	
-	return NewGameType
+	return Data
+	
+end
+
+
+-- ID search, returns gametype
+function GetGameTypeByID( ID )
+	
+	return GameTypeRegistry[ ID ]
 	
 end
 
@@ -125,9 +132,19 @@ end
 
 
 -- Leaves current state and starts new state
-function GameType:SetState( NewState, ... )
+function GameType:SetState( NewState, Replicate, ... )
 	
 	if !self:GetState( NewState ) then return end
+	
+	if SERVER then
+	
+		if Replicate then
+			
+			sendTable( "NewGameState", { self.ID, NewState, ... } )
+			
+		end
+		
+	end
 	
 	local LastState = CurrentState
 	
@@ -166,6 +183,14 @@ function GameType:SetState( NewState, ... )
 end
 
 
+-- Server replicates state to clients
+hook.Add( "NewGameState", "NewGameState", function( T )
+	
+	GetGameTypeByID( T[1] ):SetState( T[2], _, unpack( T, 3 ) )
+	
+end )
+
+
 -- Sets the next state
 function GameType:SetNextState( ID )
 	
@@ -175,9 +200,9 @@ end
 
 
 -- Switches to the next state
-function GameType:DoNextState( ... )
+function GameType:DoNextState( Replicate, ... )
 	
-	self:SetState( self.NextState, ... )
+	self:SetState( self.NextState, Replicate, ... )
 	
 end
 

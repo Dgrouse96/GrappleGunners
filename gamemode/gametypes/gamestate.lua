@@ -5,21 +5,13 @@ GameState.__index = GameState
 
 -- Call function
 function GameState:new( Data )
+
+	if !Data then Data = {} end
+
+	Data.Hooks = {}	
 	
-	local NewState = Data
-	
-	if !NewState then
-	
-		NewState = {
-			
-			Hooks = {},
-			
-		}
-		
-	end
-	
-	setmetatable( NewState, GameState )
-	return NewState
+	setmetatable( Data, GameState )
+	return Data
 	
 end
 

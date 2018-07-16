@@ -19,7 +19,7 @@ function GT_FFA:Init()
 	self:AddState( "FFA", GS_FFA )
 	
 	self:SetNextState( "FFA" )
-	self:SetState( "Warmup", 3 )
+	self:SetState( "Warmup", _, 3 )
 	
 end
 

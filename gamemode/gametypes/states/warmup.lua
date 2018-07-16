@@ -1,3 +1,8 @@
+--
+-- Simple warmup state, no stat collection
+--
+
+
 -- Kill existing Warmup
 if GS_Warmup then
 
@@ -6,27 +11,52 @@ if GS_Warmup then
 	
 end
 
-GS_Warmup = GameState()
+-- Setup default vars
+GS_Warmup = GameState( { 
+	
+	StartTime = 0,
+	EndTime = 0,
+	Length = 0,
+	
+} )
 
 function GS_Warmup:CountDownEnded()
 	
 	if self:ParentInPlay() then
 		
-		self.Parent:DoNextState()
+		self.Parent:DoNextState( true )
 		
 	end
 	
 end
 
+
 function GS_Warmup:CountDown( Seconds )
 	
-	timer.Create( "GS_Warmup", Seconds, 1, function() GS_Warmup:CountDownEnded() end )
+	if !Seconds then Seconds = 5 end
+	
+	self.StartTime = CurTime()
+	self.EndTime = CurTime() + Seconds
+	self.Length = Seconds
+	
+	if SERVER then
+	
+		timer.Create( "GS_Warmup", Seconds, 1, function() GS_Warmup:CountDownEnded() end )
+		
+	end
 	
 end
 
+
+function GS_Warmup:GetTimeLeft()
+	
+	return math.Clamp( self.EndTime - CurTime(), 0, self.Length )
+	
+end
+
+
 function GS_Warmup:Enter( Seconds )
 	
-	print( "ASS", Seconds )
 	self:CountDown( Seconds )
 	
 end

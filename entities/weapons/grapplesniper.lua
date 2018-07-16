@@ -59,6 +59,12 @@ function SWEP:CanPrimaryAttack()
 	
 end
 
+function SWEP:GetSpeedDamage()
+	
+	return math.Clamp( self:GetOwner():GetVelocity():Length() * 0.1, 5, 1000 )
+	
+end
+
 function SWEP:ShootBullet()
 
 	self:SendWeaponAnim( ACT_VM_PRIMARYATTACK )
@@ -72,7 +78,7 @@ function SWEP:ShootBullet()
 	bullet.Dir    = self:GetOwner():GetAimVector()
 	bullet.Force  = 10
 	bullet.Tracer = 3
-	bullet.Damage = math.Clamp( self:GetOwner():GetVelocity():Length() * 0.1, 5, 1000 )
+	bullet.Damage = self:GetSpeedDamage()
 	bullet.HullSize = 5
 
 	self:GetOwner():FireBullets( bullet )
