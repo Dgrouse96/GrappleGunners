@@ -36,6 +36,14 @@ function GameType:new( Data )
 end
 
 
+-- Allows self to be used as a hook identifier
+function GameType:IsValid()
+	
+	return true
+	
+end
+
+
 -- ID search, returns gametype
 function GetGameTypeByID( ID )
 	
@@ -192,17 +200,17 @@ end )
 
 
 -- Sets the next state
-function GameType:SetNextState( ID )
+function GameType:SetNextState( ID, ... )
 	
 	self.NextState = ID
-	
+	self.NextStateArgs = ...
 end
 
 
 -- Switches to the next state
-function GameType:DoNextState( Replicate, ... )
+function GameType:DoNextState( Replicate )
 	
-	self:SetState( self.NextState, Replicate, ... )
+	self:SetState( self.NextState, Replicate, self.NextStateArgs )
 	
 end
 

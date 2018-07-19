@@ -35,6 +35,7 @@ local Files = {
 		
 	"gametypes/states/warmup",
 	"gametypes/states/ffa",
+	"gametypes/states/endgame",
 		
 	"gametypes/gametypes/ffa",
 }

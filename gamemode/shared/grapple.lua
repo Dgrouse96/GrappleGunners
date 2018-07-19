@@ -115,6 +115,20 @@ function GM:SetupMove( ply, mv, cmd )
 	
 	if CLIENT and ply != LocalPlayer() then return end
 	
+	if ply.LockMovement then
+		
+		local NewVelocity = mv:GetVelocity()
+		NewVelocity = NewVelocity * Vector( 0, 0, 1 )
+		mv:SetVelocity( NewVelocity )
+		
+		local NewOrigin = ply.LockMovementPos
+		NewOrigin.z = mv:GetOrigin().z
+		mv:SetOrigin( NewOrigin )
+		
+		return
+		
+	end
+	
 	if !ply.TickData then ply.TickData = {} end
 	//if !IsValid( ply.TickData[ cmd:TickCount() ] ) then ply.TickData[ cmd:TickCount() ] = {} end
 	local TD = ply.TickData[ cmd:TickCount() ]

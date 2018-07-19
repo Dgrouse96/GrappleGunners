@@ -16,6 +16,14 @@ function GameState:new( Data )
 end
 
 
+-- Allows self to be used as a hook identifier
+function GameState:IsValid()
+	
+	return true
+	
+end
+
+
 -- Returns true parent game type is in play
 function GameState:ParentInPlay()
 	
@@ -52,7 +60,6 @@ function GameState:RemoveHook( Name )
 	
 end
 
-
 -- Adds all hooks
 function GameState:AddHooks()
 	
@@ -86,6 +93,7 @@ end
 -- Destroy this table
 function GameState:Kill()
 	
+	self:RemoveHooks()
 	table.Empty( self )
 	self = nil
 	
