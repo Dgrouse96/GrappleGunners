@@ -343,6 +343,7 @@ end
 hook.Add( "Tick", "RunPoseAnims", TickPoseAnims )
 //hook.Remove( "Tick", "RunPoseAnims" )
 
+
 local function MyCalcView( ply, pos, angles, fov )
 
 	local view = {}
@@ -382,3 +383,4 @@ local function MyCalcView( ply, pos, angles, fov )
 	
 end
 hook.Add( "CalcView", "MyCalcView", MyCalcView )
+hook.Remove( "CalcView", "MyCalcView" ) 

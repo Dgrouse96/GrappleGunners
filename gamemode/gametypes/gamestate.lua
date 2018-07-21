@@ -1,3 +1,16 @@
+--
+-- Game states, children of gametypes, lovers of women
+--
+
+
+-- Kill any existing gamestates
+if !GameStateRegistry then GameStateRegistry = {} end
+ClearObjects( GameStateRegistry )
+
+-- Used for registry
+local GameStateID = 0
+
+
 -- Declare GameState object
 GameState = {}
 GameState.__index = GameState
@@ -7,10 +20,15 @@ GameState.__index = GameState
 function GameState:new( Data )
 
 	if !Data then Data = {} end
+	
+	GameStateID = GameStateID + 1
 
-	Data.Hooks = {}	
+	Data.Hooks = {}
+	Data.ID = GameStateID
 	
 	setmetatable( Data, GameState )
+	GameStateRegistry[ GameStateID ] = Data
+	
 	return Data
 	
 end

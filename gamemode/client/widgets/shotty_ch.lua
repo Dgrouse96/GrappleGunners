@@ -49,9 +49,10 @@ function ShottyCrosshair:Think()
 	
 		local Wep = ply:GetActiveWeapon()
 		
-		if IsValid( Wep ) then
+		if IsValid( Wep ) and Wep:GetClass() == "grappleshotty" then
 			
 			self.Ammo.t = tostring( Wep:Clip1() )
+			
 			
 			if Wep:Clip1() < Wep.Primary.ClipSize then
 				

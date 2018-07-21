@@ -13,6 +13,7 @@ function EFFECT:Init( Data )
 		//self:NewMaterial()
 		self:SetModel( "models/grapplegunners/grapplecable.mdl" )
 		self:SetMaterial( self.Material )
+		self:DrawShadow( true )
 		
 	end
 	
@@ -37,7 +38,7 @@ function EFFECT:Think()
 		-- Determine Start Location
 		local Pos = Vector()
 		
-		if self.ply == LocalPlayer() and false then
+		if self.ply == LocalPlayer() then
 			
 			local M = Matrix()
 			M:Rotate( self.ply:EyeAngles() )

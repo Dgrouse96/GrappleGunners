@@ -61,6 +61,70 @@ function LerpColor( Alpha, A, B )
 end
 
 
+-- Kill any existing objects
+function ClearObjects( Registry )
+
+	if Registry then
+		
+		for k,v in pairs( Registry ) do
+			
+			v:Kill()
+			v = nil
+			
+		end
+		
+		table.Empty( Registry )
+		
+	else
+
+		Registry = {}
+		
+	end
+	
+end
+
+
+-- Removes /filename.txt from string
+function GetPath( String )
+	
+	local NewString = ""
+	local Explode = string.Explode( "/", String )
+	
+	for k,v in pairs( Explode ) do
+		
+		if k != #Explode then
+		
+			NewString = NewString .. v .. Either( k == #Explode-1, "", "/" )
+			
+		end
+		
+	end
+	
+	return NewString
+	
+end
+
+
+-- Increment GG version tag
+function IncrementVersion( Current, Milestone )
+	
+	if !Milestone then Milestone = 3 end
+	
+	-- Split Version
+	local Explode = string.Explode( ".", Current )
+	Explode[ Milestone ] = tostring( tonumber( Explode[ Milestone ] ) + 1 )
+	
+	-- Recombine it
+	local NewVersion = ""
+	for k,v in pairs( Explode ) do
+	
+		NewVersion = NewVersion .. v .. Either( k == #Explode, "", "." )
+		
+	end
+	
+	return NewVersion
+	
+end
 
 --
 -- Globals

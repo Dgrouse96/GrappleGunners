@@ -4,3 +4,7 @@ $body 			WinPodium "winpodium.smd"
 $cdmaterials	"grapplegunners\models\"
 $sequence idle 	"winpodium.smd"
 $collisionmodel "MCDCX_winpodium.smd"
+{
+	$mass 50.0
+	$concave
+}

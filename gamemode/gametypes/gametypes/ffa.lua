@@ -1,11 +1,3 @@
--- Kill existing FFA
-if GT_FFA then
-
-    GT_FFA:Kill()
-    GT_FFA = nil
-	
-end
-
 GT_FFA = GameType()
 
 GT_FFA.Name = "Free-For-All"
@@ -20,7 +12,7 @@ function GT_FFA:Init()
 	self:AddState( "FFA", GS_FFA )
 	self:AddState( "EndGame", GS_EndGame )
 	
-	self:SetNextState( "FFA", 1 )
+	self:SetNextState( "FFA", self.FragLimit )
 	self:SetState( "Warmup", _, 3 )
 	
 end

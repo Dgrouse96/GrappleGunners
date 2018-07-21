@@ -1,5 +1,4 @@
 include( "cl_files.lua" )
-print( "Grapple Gunners - Version 0.1" )
 
 -- Draw Hands
 function GM:PostDrawViewModel( vm, ply, weapon )

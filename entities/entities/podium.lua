@@ -1,17 +1,30 @@
+AddCSLuaFile()
+
 ENT.Base = "base_entity"
 ENT.Type = "anim"
 
 ENT.WinnerLocations = {
-	[1] = Vector()
-	[2] = Vector()
-	[3] = Vector()
+	[1] = Vector(),
+	[2] = Vector(),
+	[3] = Vector(),
 }
 
 function ENT:Initialize()
 	
-	self:SetModel( "models/grapplegunners/podium.mdl" )
+	if CLIENT then return end
+	
+	self:SetModel( "models/grapplegunners/winpodium.mdl" )
+	self:PhysicsInit( SOLID_VPHYSICS )
+	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
-	self:SetCollisionGroup( COLLISION_GROUP_NONE )
+	
+	local phys = self:GetPhysicsObject()
+	
+	if phys:IsValid() then
+	
+		phys:EnableMotion( false )
+		
+	end
 	
 end
 
@@ -30,8 +43,9 @@ end
 function ENT:GetWinPos( Place )
 	
 	if Place <= self:GetWinnerCount() then
-	
-		return self.WinnerLocations[ Place ], self:GetAngles()
+		
+		local Pos = self.WinnerLocations[ Place ] + self:GetPos()
+		return Pos, self:GetAngles()
 		
 	end
 	

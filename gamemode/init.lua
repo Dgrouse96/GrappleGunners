@@ -22,8 +22,6 @@ end
 
 function GM:PlayerSpawn( ply )
 	
-	ply:Give( "grappleshotty" )
-	ply:Give( "grapplesniper" )
 	self:PlayerSetModel( ply )
 	
 	
@@ -46,3 +44,21 @@ function GM:PlayerSetHandsModel( ply, ent )
 	end
 
 end
+
+
+--
+-- Version
+--
+
+local Version = GData( "version" )
+
+hook.Add( "OnReloaded", "VersionUpdate", function()
+
+	
+	local NewVersion = IncrementVersion( Version:GetData()[1] )
+	Version:Input( 1, NewVersion )
+	Version:Save()
+	
+end )
+
+print( "GRAPPLE GUNNERS VERSION: " .. Version:GetData()[1] )

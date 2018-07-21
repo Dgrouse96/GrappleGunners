@@ -304,7 +304,7 @@ function GM:SetupMove( ply, mv, cmd )
 					sendTable( "GrappleLocation", HookData, EveryoneBut( ply ) )
 				
 				else
-				
+					
 					hook.Run( "GrappleLocation", HookData )
 					
 				end

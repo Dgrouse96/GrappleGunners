@@ -1,6 +1,14 @@
+--
+-- Gametypes, basically runtime gamemodes
+--
+
+
+-- Kill any existing gametypes
+if !GameTypeRegistry then GameTypeRegistry = {} end
+ClearObjects( GameTypeRegistry )
+
 -- For working with multiple game types
 CurrentGameType = nil
-GameTypeRegistry = {}
 
 
 -- Declare GameType object
@@ -8,7 +16,7 @@ GameType = {}
 GameType.__index = GameType
 
 
--- ID for server client referencing
+-- ID for server client referencing and registry
 local GameTypeID = 0
 
 
