@@ -4,11 +4,11 @@
 
 local Files = {
 
-	[1] = { -- Pre Server
+	{ -- Pre Server
 		"network/sv_network",
 	},
 
-	[2] = { -- Shared
+	{ -- Shared
 		"shared",
 		"shared/spheretrace",
 		"shared/grapple",
@@ -23,17 +23,19 @@ local Files = {
 		"gametypes/states/endgame",
 
 		"gametypes/gametypes/ffa",
+
+		"data/podiums",
+		"shared/maps",
 	},
 
-	[3] = { -- Server
+	{ -- Server
 		"data/sv_stats",
 		"data/sv_achievements",
 		"data/statslist",
 		"data/achievementlist",
-		"data/podiums",
 	},
 
-	[4] = { -- Client
+	{ -- Client
 		"cl_init",
 		"cl_files",
 		"network/cl_network",
