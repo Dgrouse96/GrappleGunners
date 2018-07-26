@@ -1,4 +1,6 @@
-MapList = GData( "maps" )
+MapList = GData( Either(SERVER,"maps","map_c"), _, 1 )
+
+if CLIENT then return end
 
 MapList:Input( "gr_crossroads",{
   Name = "Cross Roads",
@@ -6,7 +8,7 @@ MapList:Input( "gr_crossroads",{
   GameTypes = {
     GAMETYPE_FFA,
   },
-} )
+}, _, true )
 
 MapList:Input( "gm_goldencity_day",{
   Name = "Golden City",
@@ -14,6 +16,6 @@ MapList:Input( "gm_goldencity_day",{
   GameTypes = {
     GAMETYPE_PIZZATIME,
   },
-} )
+}, _, true )
 
-MapList:Save()
+MapList:Save( true )
