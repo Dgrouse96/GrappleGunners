@@ -30,7 +30,7 @@ function Stats:new( Name, Path )
 		Path = "stats/" .. Path .. "/",
 		Data = {},
 		ID = StatsID,
-    Hooks = {},
+		Hooks = {},
 
 	}
 
@@ -44,8 +44,8 @@ end
 
 -- Creates/gets player data object
 function Stats:GetPlayerData( ply )
-
-	local Steam = ply:SteamID64()
+	
+	local Steam = ply:SteamID64() or "bot"
 
 	if !self.Data[ Steam ] then
 

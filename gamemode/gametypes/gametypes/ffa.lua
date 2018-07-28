@@ -5,6 +5,10 @@ GT_FFA.Name = "Free-For-All"
 GT_FFA.Description = "Kill anything that moves."
 GT_FFA.FragLimit = 20
 
+-- Used with the scoreboard
+GT_FFA:AddScoreColumn( "Kills", 1, function( ply ) return ply:Frags() end )
+GT_FFA:AddScoreColumn( "Deaths", 2, function( ply ) return ply:Deaths() end )
+
 -- Called when the game type is loaded
 function GT_FFA:Init()
 
@@ -18,4 +22,5 @@ function GT_FFA:Init()
 
 end
 
-GT_FFA:Play()
+if CLIENT then GT_FFA:Play() return end
+StartGameType( GAMETYPE_FFA )

@@ -1,11 +1,3 @@
--- Kill any existing widgets
-if Widget_EnergyBar then
-
-    Widget_EnergyBar:Kill()
-    Widget_EnergyBar = nil
-	
-end
-
 -- Create widget object
 Widget_EnergyBar = Widget()
 

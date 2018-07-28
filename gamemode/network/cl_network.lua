@@ -4,7 +4,9 @@
 
 -- Send data to sever if request exists
 function sendRequest( name, t )
-
+	
+	if !t then t = {} end
+	
 	net.Start( "gg_Request" )
 
 		net.WriteString( name )
@@ -20,7 +22,7 @@ net.Receive( "gg_Table", function()
 
 	local name = net.ReadString()
 	local t = net.ReadTable()
-
+	
 	hook.Run( name, t )
 
 end )
@@ -52,10 +54,10 @@ net.Receive( "gg_Entity", function()
 end )
 
 net.Receive( "gg_Args", function()
-
+	
 	local name = net.ReadString()
-	local args = net.ReadTable()
+	local t = net.ReadTable()
 
-	hook.Run( name, unpack( args ) )
+	hook.Run( name, unpack( t ) )
 
 end )

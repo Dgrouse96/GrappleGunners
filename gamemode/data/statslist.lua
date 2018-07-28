@@ -1,3 +1,7 @@
+--
+-- Player kills
+--
+
 S_Kills = Stats( "kills" )
 
 function S_Kills:GetTotalKills( ply )

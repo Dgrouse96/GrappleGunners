@@ -2,23 +2,31 @@
 -- Widget Object
 --
 
+WidgetRegistry = WidgetRegistry or {}
+ClearObjects( WidgetRegistry )
+
+local WidgetID = 0
+
 Widget = {}
 Widget.__index = Widget
 
 -- Create a new widget
-function Widget:new( Init, Draw, Think, Hidden )
+function Widget:new( Hidden )
+	
+	WidgetID = WidgetID + 1
 	
 	local NewWidget = {
 		
-		Init = Init,
-		Draw = Draw,
-		Think = Think,
 		Hidden = Hidden or false,
 		Parent = {},
 		Data = {},
+		ID = WidgetID,
+		
 	}
 	
 	setmetatable( NewWidget, Widget )
+	WidgetRegistry[ WidgetID ] = NewWidget
+	
 	return NewWidget
 	
 end
@@ -41,7 +49,7 @@ end
 
 function Widget:AddData( Index, Data )
 	
-	self.Data[ Index ] = Table
+	self.Data[ Index ] = Data
 	
 end
 
@@ -52,13 +60,17 @@ function Widget:GetData( Index )
 end
 
 -- Hide/Draw widgets
-function Widget:SetHidden( State )
+function Widget:SetHidden( State, DontChange )
 	
-	self.Hidden = State
+	if !DontChange then
+	
+		self.Hidden = State
+		
+	end
 	
 	if State then
 	
-		self:Run()
+		self:Hide()
 	
 	else
 	
@@ -70,19 +82,17 @@ end
 
 function Widget:GetHidden()
 	
-	return self.Hidden
+	return self.Hidden or self.Parent.Hidden
 	
 end
 
-function Widget:Run()
+function Widget:UnHide()
 	
 	if !self.Parent.Hidden then
-	
-		self.Hidden = false
 		
 		if self.Init then
 		
-			self.Init()
+			self:Init()
 			
 		end
 		
@@ -103,8 +113,6 @@ function Widget:Run()
 end
 
 function Widget:Hide()
-		
-	self.Hidden = true
 	
 	hook.Remove( "HUDPaint", self )
 	hook.Remove( "Think", self )

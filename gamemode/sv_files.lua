@@ -14,6 +14,9 @@ local Files = {
 		"shared/grapple",
 		"shared/grapplelib",
 		"shared/datalib",
+		
+		"data/stats",
+		"data/playtime",
 
 		"gametypes/gamestate",
 		"gametypes/gametype",
@@ -29,7 +32,6 @@ local Files = {
 	},
 
 	{ -- Server
-		"data/sv_stats",
 		"data/sv_achievements",
 		"data/statslist",
 		"data/achievementlist",
@@ -43,18 +45,23 @@ local Files = {
 		"client/draw",
 		"client/fonts",
 		"client/widget",
+		"client/derma",
 		"client/hud",
-
-		"data/cl_achievements",
-
+		
 		"client/widgets/energybar",
 		"client/widgets/healthbar",
-
 		"client/widgets/shotty_ch",
 		"client/widgets/sniper_ch",
 		"client/widgets/crosshairs",
+		
+		"client/widgets/colourtint",
+		"client/derma/scoreboard",
+		//"client/derma/mapvote",
+		
+		"client/hudlist",
 
-		"client/huds/gameplayhud",
+		"data/cl_achievements",
+		"data/localsettings",
 
 		"anims/poses",
 		"anims/posemaker",

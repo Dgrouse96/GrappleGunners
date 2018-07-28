@@ -2,7 +2,6 @@
 -- Object based file system
 --
 
-
 -- Kill any existing data tables
 if !GDataRegistry then GDataRegistry = {} end
 ClearObjects( GDataRegistry )
@@ -18,7 +17,7 @@ GData.__index = GData
 
 
 -- Call function
-function GData:new( File, SaveFile, RepID )
+function GData:new( File, SaveFile )
 
 	if !SaveFile then SaveFile = true end
 
@@ -30,66 +29,21 @@ function GData:new( File, SaveFile, RepID )
 		Data = {},
 		ID = GDataID,
 		SaveFile = SaveFile,
-		RepID = RepID,
 
 	}
 
 	setmetatable( NewGData, GData )
 	GDataRegistry[ GDataID ] = NewGData
 
-	if self:HasAuth( Replicate ) then
-
-		NewGData:Load()
-
-	end
-
-	-- Client Replication
-	if RepID and CLIENT then
-
-		hook.Add( "GDataInput", self, self.Input )
-		hook.Add( "GDataSet", self, self.Set )
-		hook.Add( "GDataSave", self, self.Save )
-		hook.Add( "GDataLoad", self, self.Load )
-		print( "CHECK" )
-	end
+	NewGData:Load()
 
 	return NewGData
 
 end
 
 
--- Check if SERVER and Replicate == true
-function GData:HasAuth( Replicate )
-	print( self.RepID and ( !Replicate or SERVER ) )
-	return self.RepID and ( !Replicate or SERVER )
-
-end
-
-
--- If
-function GData:DataMismatch( Replicate )
-	print( "MEME", Replicate )
-	 return CLIENT and Replicate and Replicate != self.RepID
-
-end
-
-
--- Replicate new data to player(s)!
-function GData:Replicate( Replicate, Ply, Type, ... )
-
-	if !self:HasAuth( Replicate ) then return end -- Do we replicate?
-	sendArgs( Type, { ..., self.RepID }, Ply )
-
-end
-
-
 -- Loads file if it exists
-function GData:Load( Replicate, Ply, Data )
-
-	if Data then self.Data = Data end
-
-	if self:DataMismatch( Replicate ) then return end
-	self:Replicate( Replicate, Ply, _, _, "GDataLoad" )
+function GData:Load()
 
 	if !file.Exists( self.File, "DATA" ) then return end
 
@@ -105,10 +59,7 @@ end
 
 
 -- Saves data to file
-function GData:Save( Replicate, Ply )
-
-	if self:DataMismatch( Replicate ) then return end
-	self:Replicate( Replicate, Ply, "GDataSave" )
+function GData:Save()
 
 	if !self.SaveFile then return end
 
@@ -121,7 +72,7 @@ end
 
 
 function GData:Kill()
-
+	
 	table.Empty( self )
 	self = nil
 
@@ -141,14 +92,10 @@ function GData:GetData( Load )
 end
 
 
-function GData:Set( Table, Save, Replicate, Ply )
-
-	if self:DataMismatch( Replicate ) then return end
-	self:Replicate( Replicate, Ply, "GDataSet", Table, Save )
-
+function GData:Set( Table, Save )
 
 	table.Empty( self.Data )
-
+	
 	for k,v in pairs( Table ) do
 
 		self.Data[k] = v
@@ -163,10 +110,7 @@ end
 
 
 
-function GData:Input( KeyOrTable, Value, Save, Replicate, Ply )
-
-	if self:DataMismatch( Replicate ) then return end
-	self:Replicate( Replicate, Ply, "GDataInput", KeyOrTable, Value, Save )
+function GData:Input( KeyOrTable, Value, Save )
 
 	if istable( KeyOrTable ) then
 
@@ -177,7 +121,7 @@ function GData:Input( KeyOrTable, Value, Save, Replicate, Ply )
 		end
 
 	elseif isnumber( KeyOrTable ) or isstring( KeyOrTable ) then
-
+		
 		self.Data[ KeyOrTable ] = Value
 
 

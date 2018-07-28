@@ -17,23 +17,31 @@ GameType.__index = GameType
 
 
 -- Call function
-function GameType:new( ID, Data )
+function GameType:new( ID )
 
-	if !Data then Data = {} end
+	NewGameType = {
 
-	Data.Name = ""
-	Data.Description = ""
-	Data.ID = ID
-	Data.InPlay = false
-	Data.CurrentState = nil
-	Data.NextState = nil
-	Data.Hooks = {}
-	Data.States = {}
+		Name = "",
+		Description = "",
+		ID = ID,
+		InPlay = false,
+		Hooks = {},
+		States = {},
+		Scores = {},
+		SortedPlayers = function()
+			
+			local tab = table.Copy( player.GetAll() )
+			table.sort( tab, function( a, b ) return a:Frags() > b:Frags() end )
+			return tab
+			
+		end
+		
+	}
 
-	setmetatable( Data, GameType )
-	GameTypeRegistry[ ID ] = Data
+	setmetatable( NewGameType, GameType )
+	GameTypeRegistry[ ID ] = NewGameType
 
-	return Data
+	return NewGameType
 
 end
 
@@ -235,8 +243,20 @@ function GameType:StopAllStates()
 end
 
 
+function GameType:AddScoreColumn( Name, Column, Getter )
+	
+	if !Column then Column = #self.Scores + 1 end
+	
+	self.Scores[ Column ] = {
+		Name = Name,
+		Getter = Getter,
+	}
+	
+end
+
+
 -- Start the Game Type
-function GameType:Play( State )
+function GameType:Play()
 
 	if CurrentGameType then
 
@@ -252,6 +272,8 @@ function GameType:Play( State )
 		self:Init()
 
 	end
+	
+	CurrentGameType = self
 
 	print( "GAMETYPE LOADED: " .. self.Name )
 
@@ -285,3 +307,30 @@ end
 
 
 setmetatable( GameType, { __call = GameType.new } )
+
+if SERVER then
+
+	function StartGameType( GT ) -- USE THIS FOR SWITCHING GAMETYPES
+		
+		if isnumber( GT ) then
+		
+			GT = GetGameTypeByID( GT )
+			
+		end
+		
+		sendFloat( "StartGameType", GT.ID )
+		PlayTime:SetGameTypeRep( _, GT.ID )
+		
+		GT:Play()
+		
+	end
+
+else
+	
+	hook.Add( "StartGameType", "ClientRep", function( f )
+	
+		GetGameTypeByID( f ):Play()
+	
+	end )
+	
+end

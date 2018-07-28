@@ -18,6 +18,48 @@ local Fonts = {
 		shadow = true
 	},
 	
+	["ScoreboardTitle"]={
+		font = "Hemi Head Rg",
+		size = 60,
+		antialias = true,
+		shadow = true,
+	},
+	
+	["ScoreboardText1"]={
+		font = "Hemi Head Rg",
+		size = 36,
+		antialias = true,
+		shadow = true,
+	},
+	
+	["ScoreboardText2"]={
+		font = "Hemi Head Rg",
+		size = 20,
+		antialias = true,
+		shadow = true,
+	},
+	
+	["ScoreboardLeader"]={
+		font = "Hemi Head Rg",
+		size = 27,
+		antialias = true,
+		shadow = true,
+	},
+	
+	["Scoreboard2nd"]={
+		font = "Hemi Head Rg",
+		size = 25,
+		antialias = true,
+		shadow = true,
+	},
+	
+	["Scoreboard3rd"]={
+		font = "Hemi Head Rg",
+		size = 23,
+		antialias = true,
+		shadow = true,
+	},
+	
 }
 
 function RefreshFont( font )

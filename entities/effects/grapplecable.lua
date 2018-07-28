@@ -38,7 +38,7 @@ function EFFECT:Think()
 		-- Determine Start Location
 		local Pos = Vector()
 
-		if self.ply == LocalPlayer() and false then
+		if self.ply == LocalPlayer() and !self.ply:IsThirdPerson() then
 
 			local M = Matrix()
 			M:Rotate( self.ply:EyeAngles() )

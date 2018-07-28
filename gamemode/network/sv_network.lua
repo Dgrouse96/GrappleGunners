@@ -89,11 +89,11 @@ function sendMessage( name, ply, rep )
 end
 
 -- Send table to client
-function sendTable( name, t, ply, rep, type )
+function sendTable( name, t, ply, rep, nstring )
 
-	if !type then type = "gg_Table" end
+	if !nstring then nstring = "gg_Table" end
 
-	net.Start( type )
+	net.Start( nstring )
 	net.WriteString( name )
 	net.WriteTable( t )
 

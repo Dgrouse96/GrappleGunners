@@ -2,20 +2,30 @@
 -- HUD Object (Holds Widgets)
 --
 
+HUDRegistry = HUDRegistry or {}
+ClearObjects( HUDRegistry )
+
+local HUDID = 0
+
 HUD = {}
 HUD.__index = HUD
 
 -- Create a new HUD
 function HUD:new( Hidden )
 	
+	HUDID = HUDID + 1
+	
 	local NewHud = {
 		
 		Hidden = Hidden or false,
 		Widgets = {},
+		ID = HUDID,
 		
 	}
 	
 	setmetatable( NewHud, HUD )
+	HUDRegistry[ HUDID ] = NewHud
+	
 	return NewHud
 	
 end
@@ -32,7 +42,11 @@ function HUD:AddWidget( Name, Widget )
 	self.Widgets[ Name ] = Widget
 	
 	-- Won't draw if HUD is hidden
-	Widget:Run()
+	if !Widget:GetHidden() then
+	
+		Widget:UnHide()
+		
+	end
 	
 end
 
@@ -53,7 +67,7 @@ function HUD:SetHidden( State )
 	
 	for Name, Widget in pairs( self.Widgets ) do
 			
-		Widget:SetHidden( State )
+		Widget:SetHidden( State, true )
 			
 	end
 	

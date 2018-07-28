@@ -344,7 +344,7 @@ hook.Add( "Tick", "RunPoseAnims", TickPoseAnims )
 //hook.Remove( "Tick", "RunPoseAnims" )
 
 
-local function MyCalcView( ply, pos, angles, fov )
+local function ThirdPersonView( ply, pos, angles, fov )
 
 	local view = {}
 
@@ -382,5 +382,28 @@ local function MyCalcView( ply, pos, angles, fov )
 	return view
 
 end
-hook.Add( "CalcView", "MyCalcView", MyCalcView )
-//hook.Remove( "CalcView", "MyCalcView" ) 
+
+
+local function UpdateThirdPerson()
+	
+	if LocalPlayer():IsThirdPerson() then
+		
+		hook.Add( "CalcView", "ThirdPerson", ThirdPersonView )
+	
+	else
+		
+		hook.Remove( "CalcView", "ThirdPerson" )
+		
+	end
+	
+end
+
+-- hacky asf
+timer.Simple( 5, UpdateThirdPerson )
+
+concommand.Add( "gg_thirdperson", function( args )
+	
+	LocalSettings:Input( "thirdperson", !LocalSettings:GetData()[ "thirdperson" ], true )
+	UpdateThirdPerson()
+	
+end )
