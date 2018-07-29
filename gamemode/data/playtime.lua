@@ -2,27 +2,30 @@
 -- Playtime
 --
 
-PlayTime = Stats( Either( SERVER, "playtime", "playtime_c" ) )
+-- Created before stat replication, needs an update
+
+PlayTime = Stats( "playtime" )
 
 
 -- Used when client syncs with server data
 function PlayTime:SetTypeData( ply, ID, Data )
 	
-	self:GetPlayerData( ply )[ ID ] = Data
+	self:GetData( ply )[ ID ] = Data
 	
 end
 hook.Add( "GetPlayTimeData", "Update", function( ... ) PlayTime:SetTypeData( ... ) end )
 
 
+-- Synced data fetching
 function PlayTime:GetTypeData( ply, ID )
 	
-	local Data = self:GetPlayerData( ply )
+	local Data = self:GetData( ply )
 	
 	if !Data[ ID ] then 
 	
 		Data[ ID ] = {
 			
-			Start = 0,
+			Start = CurTime(),
 			Total = 0,
 			HasData = SERVER,
 			SentRequest = false,
@@ -31,6 +34,7 @@ function PlayTime:GetTypeData( ply, ID )
 		
 	end
 	
+	if Data[ ID ].Start == 0 then Data[ ID ].Start = CurTime() end
 	
 	-- Client asks server for missing player data
 	if !Data[ ID ].HasData and !Data[ ID ].SentRequest then
@@ -45,10 +49,12 @@ function PlayTime:GetTypeData( ply, ID )
 end
 
 
+-- Saves play time to file
 function PlayTime:SaveCurrent( ply, Time )
 	
+	if CLIENT then return end
+	
 	if !self.GameType then return end
-		
 	local Data = self:GetTypeData( ply, self.GameType )
 	
 	if Data.Start == 0 then return end
@@ -57,12 +63,12 @@ function PlayTime:SaveCurrent( ply, Time )
 	Data.Start = 0
 	Data.HasData = SERVER
 	Data.SentRequest = false
-	PrintTable( self:GetPlayerData( ply ) )
-	self:SavePly( ply )
+	self:Save( ply )
 	
 end
 
 
+-- Shared, will sync if data is missing
 function PlayTime:GetPlayTime( ply, GameType )
 	
 	if !GameType then
@@ -79,12 +85,38 @@ function PlayTime:GetPlayTime( ply, GameType )
 		
 	end
 	
+	if !ply then return 0 end
+	
 	local Data = self:GetTypeData( ply, GameType )
-	return math.floor( CurTime() - Data.Start + Data.Total )
+	
+	if GameType == CurrentGameType.ID then
+	
+		return math.floor( CurTime() - Data.Start + Data.Total )
+	
+	else
+		
+		return math.floor( Data.Total )
+	
+	end
+end
+
+
+function PlayTime:GetTotalPlayTime( ply )
+	
+	local Total = 0
+	
+	for k,v in pairs( self:GetData( ply ) ) do
+		
+		Total = Total + self:GetPlayTime( ply, k )
+		
+	end
+	
+	return Total
 	
 end
 
 
+-- Internal
 function PlayTime:SetGameTypeSingle( ply, GameType, Time )
 	
 	if !Time then Time = CurTime() end
@@ -144,16 +176,16 @@ function PlayTime:SetGameTypeRep( ply, GameType )
 	
 end
 
-AddRequest( "GrabPlayTime", function( T )
+AddRequest( "GrabPlayTime", function( ply, T )
 	
 	if !IsValid( T[1] ) then return end
 	if !T[1]:IsPlayer() then return end
 	if !isnumber( T[2] ) then return end
 	
 	local Data = PlayTime:GetTypeData( T[1], T[2] )
-	sendArgs( "GetPlayTimeData", { T[1], T[2], Data } )
+	sendArgs( "GetPlayTimeData", { T[1], T[2], Data }, ply )
 	
 end )
 
--- Periodic saving of play time
-timer.Create( "SavePlayTime", 60, 0, function() PlayTime:SetGameType() end )
+-- Periodic saving of play time for all players
+timer.Create( "SavePlayTime", 30, 0, function() PlayTime:SetGameType() end )

@@ -323,8 +323,6 @@ local function ThinkPoseAnims()
 	LocalPlayer():RunPoseAnims( FrameTime() )
 
 end
-hook.Add( "Think", "RunPoseAnims", ThinkPoseAnims )
-//hook.Remove( "Think", "RunPoseAnims" )
 
 
 local function TickPoseAnims()
@@ -389,10 +387,12 @@ local function UpdateThirdPerson()
 	if LocalPlayer():IsThirdPerson() then
 		
 		hook.Add( "CalcView", "ThirdPerson", ThirdPersonView )
+		hook.Add( "Think", "RunPoseAnims", ThinkPoseAnims )
 	
 	else
 		
 		hook.Remove( "CalcView", "ThirdPerson" )
+		hook.Remove( "Think", "RunPoseAnims" )
 		
 	end
 	

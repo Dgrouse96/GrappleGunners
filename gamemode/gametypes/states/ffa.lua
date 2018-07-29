@@ -1,4 +1,5 @@
 GS_FFA = GameState()
+GS_FFA.Completors = {}
 
 function GS_FFA:Enter( FragLimit )
 
@@ -10,6 +11,9 @@ function GS_FFA:Enter( FragLimit )
 		ply.LockMovement = false
 
 	end
+	
+	-- People eligable for game completed stat
+	self.Completors = table.Copy( player.GetAll() )
 
 	if SERVER then
 
@@ -42,13 +46,36 @@ function GS_FFA:Enter( FragLimit )
 
 end
 
-function GS_FFA:PlayerDeath( Victim, Inflictor, Attacker )
+function GS_FFA:Leave()
+	
+	if CLIENT then return end
+	
+	for k,v in pairs( player.GetAll() ) do
+		
+		if table.HasValue( self.Completors, v ) or table.HasValue( self.Parent:TopThree() or {}, v ) then
+			
+			S_Completed:Increment( v, "FFA", 1 )
+			
+		end
+		
+	end
+	
+end
 
-	S_Kills:Increment( Attacker, "FFA", 1 )
+function GS_FFA:PlayerDeath( Victim, Inflictor, Attacker )
+	
+	if Victim != Attacker then
+	
+		S_Kills:Increment( Attacker, "FFA", 1 )
+		
+	end
+	
+	S_Deaths:Increment( Victim, "FFA", 1 )
 
 	if Attacker:Frags() >= self.FragLimit then
-
-		self.Parent:SetState( "EndGame", true, Attacker )
+		
+		S_Wins:Increment( Attacker, "FFA", 1 )
+		self.Parent:SetState( "EndGame", true )
 
 	end
 

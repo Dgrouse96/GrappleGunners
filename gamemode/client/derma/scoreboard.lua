@@ -6,6 +6,17 @@ function Derma_Scoreboard:Init()
 	self.SpawnTime = CurTime()
 	gui.EnableScreenClicker( true )
 	
+	hook.Add( "PreDrawHUD", "ToyTownBlur", function()
+		
+		if render.SupportsPixelShaders_2_0() then
+			
+			local Alpha = math.Clamp( ( CurTime() - self.SpawnTime )*10, 0, 1 )
+			DrawToyTown( Alpha * 4, ScrH() )
+			
+		end
+		
+	end )
+	
 	self.Frame = vgui.Create( "DFrame" )
 	self.Frame:SetPos( ScrW()*0.38, 0 )
 	self.Frame:SetSize( ScrW()*0.6, ScrH() )
@@ -13,7 +24,6 @@ function Derma_Scoreboard:Init()
 	self.Frame:SetVisible( true )
 	self.Frame:SetDraggable( false )
 	self.Frame:ShowCloseButton( false )
-	self.Frame:SetBackgroundBlur( true )
 	
 	self.Frame.Paint = function( frame, w, h )
 		
@@ -21,15 +31,9 @@ function Derma_Scoreboard:Init()
 		-- Background
 		--
 		
-		local Alpha = math.Clamp( ( CurTime() - self.SpawnTime )*10, 0, 1 )
+		local Alpha = math.Clamp( ( CurTime() - self.SpawnTime )*5, 0, 1 )
 		local Alpha2 = math.Clamp( ( CurTime() - self.SpawnTime )*2, 0, 1 )
 		local Alpha2Ease = ease( Alpha2, 2, 0 )
-		
-		if render.SupportsPixelShaders_2_0() then
-			
-			DrawToyTown( Alpha * 4, ScrH() )
-			
-		end
 		
 		draw.RoundedBox( 0, 0, 0, w, h, Color(0,0,0,Lerp( Alpha, 0, 200 )) )
 		
@@ -124,6 +128,13 @@ function Derma_Scoreboard:Init()
 		PlyRow:SetText( "" )
 		PlyRow:Dock( TOP )
 		PlyRow:DockMargin( FPad, 0, FPad, 4 )
+		PlyRow.Ply = ply
+		
+		function PlyRow:DoClick()
+		
+			Derma_Stats:SelectPlayer( ply )
+		
+		end
 		
 		local Avatar = vgui.Create( "AvatarImage", PlyRow )
 		Avatar:SetSize( 50, 50 )
@@ -167,12 +178,6 @@ function Derma_Scoreboard:Init()
 			
 			local Amount = 0
 			
-			if PlayTime then
-				
-				Amount = PlayTime:GetPlayTime( ply )
-				
-			end
-			
 			draw.SimpleText( Amount, Font, w*0.75, h*0.5, COL_WHITE, 1, 1 )
 			
 			draw.SimpleText( ply:Ping(), Font, w*0.95, h*0.5, COL_WHITE, 2, 1 )
@@ -207,6 +212,8 @@ function Derma_Scoreboard:Death()
 		self.Frame:Close()
 		
 	end
+	
+	hook.Remove( "PreDrawHUD", "ToyTownBlur" )
 	
 end
 

@@ -18,7 +18,7 @@ Stats.__index = Stats
 
 
 -- Call function
-function Stats:new( Name, Path )
+function Stats:new( Name, Path, RepID )
 
 	if !Path then Path = Name end
 	StatsID = StatsID + 1
@@ -31,14 +31,43 @@ function Stats:new( Name, Path )
 		Data = {},
 		ID = StatsID,
 		Hooks = {},
-
+		RepID = RepID,
+		
 	}
 
-  setmetatable( NewStat, Stats )
+	setmetatable( NewStat, Stats )
 	StatsReg[ StatsID ] = NewStat
 
 	return NewStat
 
+end
+
+
+function GetStat( ID )
+	
+	return StatsReg[ ID ]
+	
+end
+
+function GetStatRep( RepID )
+	
+	for k,v in pairs( StatsReg ) do
+		
+		if v.RepID == RepID then
+			
+			return v
+		
+		end
+		
+	end
+	
+end
+
+
+function Stats:Replicates()
+	
+	return SERVER and self.RepID
+	
 end
 
 
@@ -53,15 +82,45 @@ function Stats:GetPlayerData( ply )
 		return self.Data[ Steam ]
 
 	end
+	
+	if CLIENT and self.RepID and !self.Data[ Steam ].HasData and !self.Data[ Steam ].SendRequest then
+		
+		sendRequest( "GrabStatData", { ply, self.RepID } )
+		self.Data[ Steam ].SendRequest = true
+		
+	end
 
 	return self.Data[ Steam ]
 
 end
 
 
--- Gets player's data object's data
-function Stats:GetData( ply )
+-- Sync Player Data
+if SERVER then
 
+	AddRequest( "GrabStatData", function( ply, T )
+	
+		if !IsValid( T[1] ) then return end
+		if !T[1]:IsPlayer() then return end
+		if !isnumber( T[2] ) then return end
+		
+		local Data = GetStatRep( T[2] ):GetData( T[1] )
+		sendArgs( "StatsSetData", { T[2], T[1], Data }, ply )
+		
+	end )
+	
+end
+
+
+-- Gets player's data object's data
+function Stats:GetData( ply, Key )
+	
+	if Key then
+	
+		return self:GetPlayerData( ply ):GetData()[ Key ] or 0
+	
+	end
+	
 	return self:GetPlayerData( ply ):GetData()
 
 end
@@ -97,10 +156,65 @@ function Stats:Save( ply )
 end
 
 
+function Stats:SetDataPly( ply, Table, Save )
+	
+	if self:Replicates() then
+		
+		sendArgs( "StatsSetData", { self.RepID, ply, Table, Save } )
+		
+	end
+	
+	self:GetPlayerData( ply ):Set( Table, Save )
+	if Save then self:SavePly( ply ) end
+	self:RunHook( "OnSet", ply, Table, Save )
+	
+end
+
+-- Replicate
+hook.Add( "StatsSetData", "Replicate", function( RepID, ply, Table, Save )
+
+	local Stat = GetStatRep( RepID )
+	local Data = Stat:GetPlayerData( ply )
+	
+	Data.HasData = true
+	Data.SentRequest = false
+	
+	Stat:SetDataPly( ply, Table, Save )
+	
+end )
+
+
+function Stats:SetData( ply, Table, Save )
+
+	if !Save then Save = true end
+	if !ply then ply = player.GetAll() end
+
+	if istable( ply ) then
+
+		for k,v in pairs( ply ) do
+
+			self:SetDataPly( v, Table, Save )
+
+		end
+
+	else
+
+		self:SetDataPly( ply, Table, Save )
+
+	end
+
+end
+
+
 function Stats:SetPly( ply, Key, Amount, Save )
 
+	if self:Replicates() then
+		
+		sendArgs( "StatsSet", { self.RepID, ply, Key, Amount, Save } )
+		
+	end
+	
 	local PData = self:GetData( ply )
-
 	if !PData[ Key ] then PData[ Key ] = 0 end
 
 	PData[ Key ] = Amount
@@ -109,6 +223,9 @@ function Stats:SetPly( ply, Key, Amount, Save )
 	self:RunHook( "OnUpdate", ply, Key, Amount, Save )
 
 end
+
+-- Replicate
+hook.Add( "StatsSet", "Replicate", function( RepID, ... ) GetStatRep( RepID ):SetPly( ... ) end )
 
 
 function Stats:Set( ply, Key, Amount, Save )
@@ -136,11 +253,20 @@ end
 -- Increment a player's achievement stat
 function Stats:IncrementPly( ply, Key, Amount, Save )
 
+	if self:Replicates() then
+		
+		sendArgs( "AchievementInc", { self.RepID, ply, Key, Amount, Save } )
+		
+	end
+	
 	local PData = self:GetData( ply )
 	if !PData[ Key ] then PData[ Key ] = 0 end
 	self:SetPly( ply, Key, PData[ Key ] + Amount, Save )
 
 end
+
+-- Replicate
+hook.Add( "StatsInc", "Replicate", function( RepID, ... ) GetStatRep( RepID ):IncrementPly( ... ) end )
 
 
 -- Increment a player or table of player's stat
@@ -163,6 +289,23 @@ function Stats:Increment( ply, Key, Amount, Save )
 
 	end
 
+end
+
+
+-- Count up each stat
+function Stats:GetTotal( ply )
+	
+	local Count = 0
+
+	for k,v in pairs( self:GetData( ply ) ) do
+	
+		if isnumber( v ) then Count = Count + v end
+
+	end
+
+	return Count
+
+	
 end
 
 
@@ -201,7 +344,6 @@ function Stats:RunHook( Hook, ... )
   for k,v in pairs( self.Hooks[ Hook ] ) do v( ... ) end
 
 end
-
 
 
 function Stats:BindOnUpdate( Identifier, Func )

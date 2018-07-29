@@ -54,6 +54,20 @@ function GameType:IsValid()
 end
 
 
+function GameType:TopThree()
+	
+	local Top3 = {}
+	
+	for k,v in pairs( self.SortedPlayers() ) do
+		
+		Top3[ k ] = v
+		if k >= 3 then return Top3 end
+		
+	end
+	
+end
+
+
 -- ID search, returns gametype
 function GetGameTypeByID( ID )
 

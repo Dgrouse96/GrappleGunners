@@ -11,6 +11,7 @@ local Files = {
 	
 	"data/stats",
 	"data/playtime",
+	"data/statlist",
 
 	"network/cl_network",
 	"client/grapplecable",
@@ -27,11 +28,13 @@ local Files = {
 	"client/widgets/crosshairs",
 	"client/widgets/colourtint",
 	"client/derma/scoreboard",
+	"client/derma/playerstats",
 	//"client/derma/mapvote",
 	
 	"client/hudlist",
 
-	"data/cl_achievements",
+	"data/achievements",
+	"data/achievementlist",
 	"data/localsettings",
 
 	"anims/poses",

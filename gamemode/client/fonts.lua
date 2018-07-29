@@ -60,6 +60,62 @@ local Fonts = {
 		shadow = true,
 	},
 	
+	["StatsHeader"]={
+		font = "Hemi Head Rg",
+		size = 40,
+		antialias = true,
+		shadow = true,
+	},
+	
+	["StatsSubHeader"]={
+		font = "Hemi Head Rg",
+		size = 30,
+		antialias = true,
+		shadow = true,
+	},
+	
+	["StatsSubHeader2"]={
+		font = "Hemi Head Rg",
+		size = 20,
+		antialias = true,
+		shadow = true,
+	},
+	
+	["StatsCategory"]={
+		font = "Hemi Head Rg",
+		size = 24,
+		antialias = true,
+		shadow = true,
+	},
+	
+	["StatsStat"]={
+		font = "Hemi Head Rg",
+		size = 18,
+		antialias = true,
+		shadow = true,
+	},
+	
+	["Achievment"]={
+		font = "Hemi Head Rg",
+		size = 25,
+		antialias = true,
+		shadow = true,
+	},
+	
+	["AchievmentDesc"]={
+		font = "Hemi Head Rg",
+		size = 13,
+		antialias = true,
+		shadow = true,
+	},
+	
+	["AchievmentProgress"]={
+		font = "Hemi Head Rg",
+		size = 18,
+		antialias = true,
+		shadow = true,
+	},
+	
 }
 
 function RefreshFont( font )

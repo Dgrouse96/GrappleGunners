@@ -17,6 +17,10 @@ local Files = {
 		
 		"data/stats",
 		"data/playtime",
+		"data/statlist",
+		
+		"data/achievements",
+		"data/achievementlist",
 
 		"gametypes/gamestate",
 		"gametypes/gametype",
@@ -32,9 +36,7 @@ local Files = {
 	},
 
 	{ -- Server
-		"data/sv_achievements",
-		"data/statslist",
-		"data/achievementlist",
+
 	},
 
 	{ -- Client
@@ -56,11 +58,11 @@ local Files = {
 		
 		"client/widgets/colourtint",
 		"client/derma/scoreboard",
+		"client/derma/playerstats",
 		//"client/derma/mapvote",
 		
 		"client/hudlist",
-
-		"data/cl_achievements",
+		
 		"data/localsettings",
 
 		"anims/poses",
