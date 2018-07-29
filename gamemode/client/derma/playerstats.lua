@@ -30,7 +30,7 @@ Derma_Stats.StatList = {
 		Tooltip = "Total time playing",
 		Getter = function( ply )
 		
-			if PlayTime then return PlayTime:GetTotalPlayTime( ply ) end return 0
+			if PlayTime then return PlayTime:GetTotalPlayTime( ply, true ) end return 0
 			
 		end,
 	},
@@ -67,7 +67,7 @@ Derma_Stats.StatList = {
 		Tooltip = "Total time playing FFA",
 		Getter = function( ply )
 		
-			if PlayTime then return PlayTime:GetPlayTime( ply, GAMETYPE_FFA ) end return 0
+			if PlayTime then return PlayTime:GetPlayTime( ply, GAMETYPE_FFA, true ) end return 0
 			
 		end,
 	},
@@ -104,7 +104,7 @@ Derma_Stats.StatList = {
 		Tooltip = "Total time playing Pizza Time",
 		Getter = function( ply )
 		
-			if PlayTime then return PlayTime:GetPlayTime( ply, 2 ) end return 0
+			if PlayTime then return PlayTime:GetPlayTime( ply, 2, true ) end return 0
 			
 		end,
 	},

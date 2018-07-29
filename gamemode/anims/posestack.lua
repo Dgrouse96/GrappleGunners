@@ -5,6 +5,15 @@
 local PLY = FindMetaTable( "Player" )
 
 
+-- Clamped Pose Delta
+function PLY:GetPoseDelta()
+	
+	return self.PoseDelta
+	//return math.Clamp( self.PoseDelta, 0, 0.0333 )
+	
+end
+
+
 -- Run Cycle
 local Power = 1.5
 function PLY:Anim_Run()
@@ -22,11 +31,11 @@ function PLY:Anim_Run()
 	if !self.A_SmoothRun then self.A_SmoothRun = 0 end
 
 	-- Cycle Anim based on speed
-	self.A_RunTime = self.A_RunTime + self.PoseDelta * Speed * Direction
+	self.A_RunTime = self.A_RunTime + self:GetPoseDelta() * Speed * Direction
 	local Weight = self.A_RunTime % 4
 
 	-- Smooth idle/run blend
-	self.A_SmoothRun = Lerp( self.PoseDelta * 10, self.A_SmoothRun, math.Clamp( Vel:Length2D()/50, 0, 10 ) )
+	self.A_SmoothRun = Lerp( self:GetPoseDelta() * 10, self.A_SmoothRun, math.Clamp( Vel:Length2D()/50, 0, 10 ) )
 	self.A_SmoothRun = math.Clamp( self.A_SmoothRun, 0, 1.3 )
 
 	self:GetPose():Reset( "idle1" )
@@ -78,7 +87,7 @@ function PLY:Anim_Locomotion()
 
 	if !self.A_BlendFall then self.A_BlendFall = 0 end
 
-	self.A_BlendFall = Lerp( self.PoseDelta * 15, self.A_BlendFall, Either( self:OnGround(), 0, 1 ) )
+	self.A_BlendFall = Lerp( self:GetPoseDelta() * 15, self.A_BlendFall, Either( self:OnGround(), 0, 1 ) )
 
 	-- Don't blend in these cases
 	if self.A_BlendFall < 0.001 then
@@ -106,9 +115,9 @@ function PLY:Anim_RunTilt()
 	if !self.A_LastVelocity then self.A_LastVelocity = Vector() end
 
 	local Velocity = self:GetVelocity():GetNormalized()
-	local Tilt = math.Clamp( Velocity:Cross( self.A_LastVelocity ).z * 10000 * self.PoseDelta, -20, 20 )
+	local Tilt = math.Clamp( Velocity:Cross( self.A_LastVelocity ).z * 10000 * self:GetPoseDelta(), -20, 20 )
 
-	self.A_SmoothTilt = Lerp( self.PoseDelta * 2, self.A_SmoothTilt, Tilt )
+	self.A_SmoothTilt = Lerp( self:GetPoseDelta() * 2, self.A_SmoothTilt, Tilt )
 	self.A_LastVelocity = Velocity
 
 	self:GetPose():Add( {
@@ -125,12 +134,12 @@ end
 function PLY:Anim_RunDirection()
 
 	if !self.A_SmoothRunAng then self.A_SmoothRunAng = 0 end
-
+	
 	local Velocity = self:GetVelocity():GetNormalized()
 	Velocity.z = 0
 
 	local Vel = Velocity:Angle()
-	local Yaw = self:GetAngles().y
+	local Yaw = self:EyeAngles().y
 	local Ang = Vel.y - Yaw
 
 	if Velocity:Length() > 0.1 then
@@ -148,7 +157,7 @@ function PLY:Anim_RunDirection()
 
 	end
 
-	self.A_SmoothRunAng = LerpAngle( self.PoseDelta * 10, Angle( 0, self.A_SmoothRunAng, 0 ), Angle( 0, Ang, 0 ) ).y
+	self.A_SmoothRunAng = LerpAngle( self:GetPoseDelta() * 5, Angle( 0, self.A_SmoothRunAng, 0 ), Angle( 0, Ang, 0 ) ).y
 
 	self:GetPose():Add( {
 		[0] = {
@@ -165,6 +174,8 @@ function PLY:Anim_AimSpine()
 
 	local AddPose = {}
 	local Ang = math.Clamp( self.A_SmoothRunAng, -90, 90 )
+	
+	self.A_SmoothSpineAng = Lerp( self:GetPoseDelta() * 5, self.A_SmoothSpineAng or 0, Ang )
 
 	local FixYaw = {
 		p = Vector(),
@@ -189,7 +200,10 @@ function PLY:Anim_WeaponAim()
 
 		local Smoothrun = self.A_SmoothRun or 0
 		local Pitch = self:EyeAngles().p
-
+		
+		if Pitch > 90 then Pitch = self.A_LastPitch or 0 end
+		self.A_LastPitch = Pitch
+		
 		local Pitch = Pitch + Either( self:OnGround(), Lerp( Smoothrun, -10, -35 ), -15 )
 
 		if Pitch > 0 then
@@ -267,7 +281,7 @@ function PLY:Anim_GrappleAimBlend()
 	local TargetBlend = 0
 	if self.GrappleLocation then TargetBlend = 1 end
 
-	self.A_BlendGrapple = Lerp( self.PoseDelta * 15, self.A_BlendGrapple, TargetBlend )
+	self.A_BlendGrapple = Lerp( self:GetPoseDelta() * 15, self.A_BlendGrapple, TargetBlend )
 
 	-- Don't blend in these cases
 	if self.A_BlendGrapple > 0.999 then
@@ -330,8 +344,23 @@ local function TickPoseAnims()
 	for k,ply in pairs( player.GetAll() ) do
 
 		if ply != LocalPlayer() then
-
-			ply:RunPoseAnims( engine.TickInterval() )
+			
+			if ply.A_Skip and ply.A_Skip > 0 then
+				
+				ply.A_Skip = ply.A_Skip - 1
+				
+			else
+				
+				// Skip frames per 1000 units
+				local Dist = ply:GetPos():Distance( LocalPlayer():GetPos() )
+				
+				ply.A_Skip = math.floor( Dist/1000 )
+				if !ply.A_SkipDiv then ply.A_SkipDiv = 1 end
+				
+				ply:RunPoseAnims( engine.TickInterval() * ply.A_SkipDiv )
+				ply.A_SkipDiv = ply.A_Skip + 1
+				
+			end
 
 		end
 
@@ -339,7 +368,6 @@ local function TickPoseAnims()
 
 end
 hook.Add( "Tick", "RunPoseAnims", TickPoseAnims )
-//hook.Remove( "Tick", "RunPoseAnims" )
 
 
 local function ThirdPersonView( ply, pos, angles, fov )

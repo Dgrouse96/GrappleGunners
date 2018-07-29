@@ -69,7 +69,7 @@ end
 
 
 -- Shared, will sync if data is missing
-function PlayTime:GetPlayTime( ply, GameType )
+function PlayTime:GetPlayTime( ply, GameType, format )
 	
 	if !GameType then
 		
@@ -88,20 +88,25 @@ function PlayTime:GetPlayTime( ply, GameType )
 	if !ply then return 0 end
 	
 	local Data = self:GetTypeData( ply, GameType )
+	local R = 0
 	
 	if GameType == CurrentGameType.ID then
-	
-		return math.floor( CurTime() - Data.Start + Data.Total )
+		
+		R = math.floor( CurTime() - Data.Start + Data.Total )
 	
 	else
 		
-		return math.floor( Data.Total )
-	
+		R = math.floor( Data.Total )
+		
 	end
+	
+	if format then return string.SortTime( R ) end
+	return R
+	
 end
 
 
-function PlayTime:GetTotalPlayTime( ply )
+function PlayTime:GetTotalPlayTime( ply, format )
 	
 	local Total = 0
 	
@@ -111,6 +116,7 @@ function PlayTime:GetTotalPlayTime( ply )
 		
 	end
 	
+	if format then return string.SortTime( Total ) end
 	return Total
 	
 end

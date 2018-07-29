@@ -1,8 +1,6 @@
 -- Client Grappling FX
 
 function NewGrappleLocation( T )
-
-	if !IsFirstTimePredicted() then return end
 	
 	T.ply.GrappleLocation = T.pos
 	
@@ -17,7 +15,6 @@ hook.Add( "GrappleLocation", "NewGrappleLocation", NewGrappleLocation )
 
 function RemoveGrapple( ply )
 	
-	if !IsFirstTimePredicted() then return end
 	ply.GrappleLocation = nil
 
 end

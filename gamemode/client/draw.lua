@@ -151,83 +151,30 @@ function AvatarResolution( Size )
 	
 end
 
-local function tm(s)
-
-	if s < 10 then
-	
-		return "0"..s
-		
-	else
-	
-		return s
-		
-	end
-	
-end
-
 function string.SortTime( s )
-
-	local s = math.floor( s )
 	
-	if s < 60 then
+	local days = math.floor( s / 86400 )
+	local hours = math.floor( (s%86400) / 3600 )
+	local minutes = math.floor( (s%3600) / 60 )
+	local seconds = math.floor( s%60 )
 	
-		return tostring( s )
+	local T = {
+		{ s = "s", t = seconds, a = 0 },
+		{ s = "m", t = minutes, a = 60 },
+		{ s = "h", t = hours, a = 3600 },
+		{ s = "d", t = days, a = 86400 },
+	}
+	
+	local time = ""
+	for k,v in pairs( T ) do
+		
+		if s < v.a then break end
+		time = v.t .. v.s .. " " .. time
 		
 	end
 	
-	local d = math.floor( s/86400 )
-	local h = math.floor( (s-d*86400)/3600 )
-	local m = math.floor( (s-h*3600-d*86400)/60 )
-	local sc = math.floor( s - m*60 - h*3600 - d*86400 )
-
-	if d > 0 then
+	return time
 	
-		return d..":"..tm(h)..":"..tm(m)..":"..tm(sc)
-		
-	end
-	
-	if h > 0 then
-	
-		return tm(h)..":"..tm(m)..":"..tm(sc)
-		
-	end
-	
-	if m > 0 then
-	
-		return tm(m)..":"..tm(sc)
-		
-	end
-	
-	return tostring( sc )
-end
-
-function string.SortTimeMil( s )
-
-	if s <= 10 then
-		local x = math.Round( (s-math.floor(s))*100 )
-		return string.SortTime( s )..":"..x
-	end
-	
-	return string.SortTime( s )
-end
-
-function Decimal( x )
-
-	local p = ""
-	local e = string.Explode(".",x)
-	
-	if #e <= 1 then
-	
-		p = ".0"
-		
-	end
-	
-	return x..p
-	
-end
-
-function CommaRound( x )
-	return string.Comma( math.Round(x) )
 end
 
 function draw.OutlinedBox( x, y, w, h, thickness, clr )

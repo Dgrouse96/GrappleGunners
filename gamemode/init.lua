@@ -17,7 +17,8 @@ end
 function GM:PlayerInitialSpawn( ply )
 
 	ply:SetupPlayer()
-
+	PlayTime:SetGameType( ply )
+	
 end
 
 function GM:PlayerSpawn( ply )

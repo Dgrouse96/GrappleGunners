@@ -301,11 +301,16 @@ function GM:SetupMove( ply, mv, cmd )
 				
 				if SERVER then
 					-- Draw cable for other clients
+					
 					sendTable( "GrappleLocation", HookData, EveryoneBut( ply ) )
 				
 				else
 					
-					hook.Run( "GrappleLocation", HookData )
+					if IsFirstTimePredicted() then
+					
+						hook.Run( "GrappleLocation", HookData )
+						
+					end
 					
 				end
 				
@@ -334,8 +339,12 @@ function GM:SetupMove( ply, mv, cmd )
 			sendEntity( "RemoveGrapple", ply, EveryoneBut( ply ) )
 			
 		else
-		
-			hook.Run( "RemoveGrapple", ply )
+			
+			if IsFirstTimePredicted() then
+			
+				hook.Run( "RemoveGrapple", ply )
+				
+			end
 			
 		end
 
