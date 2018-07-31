@@ -11,11 +11,30 @@ function GS_EndGame:Enter( Winner )
 			
 		end
 		
+		PrintMessage( HUD_PRINTTALK, "Game known to break at this movement - not to worry, there's a 30 second safety net." )
+		
+		-- Saftey net
+		timer.Simple( 35, function()
+			
+			PrintMessage( HUD_PRINTTALK, "Sorry! Looks like the gamemode broke again, report this to me asap." )
+			MapList:ChoseAndSendMaps()
+			
+		end )
+		
+		self:AddHook( "PlayerSpawn", self.PlayerSpawn )
+		
 		self.Podium = SpawnPodium()
 		
 		if !self.Podium then MapList:ChoseAndSendMaps() return end
 		
 		timer.Simple( 2, function()
+			
+			if !self.Parent or !self.Parent.TopThree then
+				
+				MapList:ChoseAndSendMaps()
+				return
+				
+			end
 			
 			for k,ply in pairs( self.Parent:TopThree() ) do
 				
@@ -52,6 +71,17 @@ function GS_EndGame:Enter( Winner )
 	else
 		
 		SetGameplayHud( HUD_GameOver )
+		
+	end
+	
+end
+
+
+function GS_EndGame:PlayerSpawn( ply )
+	
+	if ply.MovementLocked and ply.MovementLockedPos then
+		
+		ply:SetPos( ply.MovementLockedPos )
 		
 	end
 	
