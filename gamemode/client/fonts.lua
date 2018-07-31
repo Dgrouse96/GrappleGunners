@@ -18,6 +18,20 @@ local Fonts = {
 		shadow = true
 	},
 	
+	["DamageNotify"]={
+		font = "CPMono_v07 Bold",
+		size = sres(40),
+		antialias = true,
+		shadow = false
+	},
+	
+	["KillNotify"]={
+		font = "Hemi Head Rg",
+		size = sres(30),
+		antialias = true,
+		shadow = false
+	},
+	
 	["ScoreboardTitle"]={
 		font = "Hemi Head Rg",
 		size = 60,
@@ -112,6 +126,34 @@ local Fonts = {
 	["AchievmentProgress"]={
 		font = "Hemi Head Rg",
 		size = 18,
+		antialias = true,
+		shadow = true,
+	},
+	
+	["MapVoteHeader"]={
+		font = "Hemi Head Rg",
+		size = 70,
+		antialias = true,
+		shadow = false,
+	},
+	
+	["MapVoteName"]={
+		font = "Hemi Head Rg",
+		size = 40,
+		antialias = true,
+		shadow = false,
+	},
+	
+	["MapVoteGame"]={
+		font = "Hemi Head Rg",
+		size = 32,
+		antialias = true,
+		shadow = false,
+	},
+	
+	["MapVoteDesc"]={
+		font = "Hemi Head Rg",
+		size = 20,
 		antialias = true,
 		shadow = true,
 	},

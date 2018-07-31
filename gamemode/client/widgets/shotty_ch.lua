@@ -1,10 +1,6 @@
--- Kill any existing widgets
-if ShottyCrosshair then
-
-    ShottyCrosshair:Kill()
-    ShottyCrosshair = nil
-	
-end
+--
+-- Crosshair for the shotgun
+--
 
 ShottyCrosshair = Widget()
 
@@ -93,7 +89,7 @@ function ShottyCrosshair:Draw()
 	DTRectR( self.Ring )
 	
 	SetCol( self.Ammo.c )
-	DText( self.Ammo )
+	DTextShadow( self.Ammo, 1 )
 	
 	SetMat()
 	DTRectR( self.Recharge1 )

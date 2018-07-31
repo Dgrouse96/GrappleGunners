@@ -16,11 +16,11 @@ function GT_FFA:Init()
 	self:AddState( "Warmup", GS_Warmup )
 	self:AddState( "FFA", GS_FFA )
 	self:AddState( "EndGame", GS_EndGame )
-
+	
 	self:SetNextState( "FFA", self.FragLimit )
-	self:SetState( "Warmup", _, 3 )
+	self:SetState( "Warmup", _, 20 )
 
 end
 
-if CLIENT then GT_FFA:Play() return end
-StartGameType( GAMETYPE_FFA )
+if CLIENT then return end
+timer.Simple( 3, function() StartGameType( GAMETYPE_FFA ) end )

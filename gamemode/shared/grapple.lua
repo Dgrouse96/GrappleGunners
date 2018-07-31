@@ -115,13 +115,13 @@ function GM:SetupMove( ply, mv, cmd )
 	
 	if CLIENT and ply != LocalPlayer() then return end
 	
-	if ply.LockMovement then
+	if ply.MovementLocked then
 		
 		local NewVelocity = mv:GetVelocity()
 		NewVelocity = NewVelocity * Vector( 0, 0, 1 )
 		mv:SetVelocity( NewVelocity )
 		
-		local NewOrigin = ply.LockMovementPos
+		local NewOrigin = ply.MovementLockedPos
 		NewOrigin.z = mv:GetOrigin().z
 		mv:SetOrigin( NewOrigin )
 		
@@ -406,6 +406,39 @@ function GM:OnPlayerHitGround( ply, inWater, onFloater, speed )
 			sendEntity( "DoGroundSlam", ply, EveryoneBut( ply ) )
 			
 		end
+		
+	end
+	
+end
+
+
+--
+-- Podium Freezing
+--
+
+local PLY = FindMetaTable( "Player" )
+
+function PLY:LockMovement( state, pos )
+	
+	if !pos then pos = self:GetPos() end
+	
+	self.MovementLocked = state
+	self.MovementLockedPos = pos
+
+	if SERVER then
+		
+		sendArgs( "LockMovement", { self, state, pos }, self )
+		
+	end
+	
+end
+hook.Add( "LockMovement", "Replicate", function( ply, ... ) ply:LockMovement( ... ) end )
+
+function LockMovement( state )
+	
+	for k,ply in pairs( player.GetAll() ) do
+		
+		ply:LockMovement( state )
 		
 	end
 	

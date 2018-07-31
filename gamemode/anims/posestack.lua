@@ -8,7 +8,8 @@ local PLY = FindMetaTable( "Player" )
 -- Clamped Pose Delta
 function PLY:GetPoseDelta()
 	
-	return self.PoseDelta
+	return Lerp2( FrameTime()*10, self.LastPoseDelta or 0.00001, self.PoseDelta or 0.00001 )
+	
 	//return math.Clamp( self.PoseDelta, 0, 0.0333 )
 	
 end
@@ -114,10 +115,14 @@ function PLY:Anim_RunTilt()
 	if !self.A_SmoothTilt then self.A_SmoothTilt = 0 end
 	if !self.A_LastVelocity then self.A_LastVelocity = Vector() end
 
-	local Velocity = self:GetVelocity():GetNormalized()
-	local Tilt = math.Clamp( Velocity:Cross( self.A_LastVelocity ).z * 10000 * self:GetPoseDelta(), -20, 20 )
+	local Velocity = LerpVector( self:GetPoseDelta() * 10, self.A_LastVelocity, self:GetVelocity():GetNormalized() )
+	
+	local Amount = Either( self.GrappleLocation and !self:OnGround(), 30, 12 )
+	local Speed = Either( !self:OnGround(), 3000, 1000 )
+	
+	local Tilt = math.Clamp( Velocity:Cross( self.A_LastVelocity ).z * Speed, -Amount, Amount )
 
-	self.A_SmoothTilt = Lerp( self:GetPoseDelta() * 2, self.A_SmoothTilt, Tilt )
+	self.A_SmoothTilt = Lerp2( self:GetPoseDelta() * 5, self.A_SmoothTilt, Tilt )
 	self.A_LastVelocity = Velocity
 
 	self:GetPose():Add( {
@@ -250,9 +255,10 @@ function PLY:Anim_GrappleAim( Blend )
 
 	local Ang = self.A_GrappleAngle
 	Ang:Normalize()
-
-	local Dir = Ang:Forward()
-
+	
+	local Dir = Lerp2( self:GetPoseDelta() * 5, self.A_GrappleDir or Vector(), Ang:Forward() )
+	self.A_GrappleDir = Dir
+	
 	local F = Either( Dir.y > 0, "grap-f", "grap-b" )
 	local R = Either( -Dir.x > 0, "grap-r", "grap-l" )
 	local U = Either( -Dir.z > 0, "grap-u", "grap-d" )
@@ -277,11 +283,11 @@ end
 function PLY:Anim_GrappleAimBlend()
 
 	if !self.A_BlendGrapple then self.A_BlendGrapple = 0 end
-
+	
 	local TargetBlend = 0
 	if self.GrappleLocation then TargetBlend = 1 end
-
-	self.A_BlendGrapple = Lerp( self:GetPoseDelta() * 15, self.A_BlendGrapple, TargetBlend )
+	
+	self.A_BlendGrapple = Lerp2( self:GetPoseDelta() * 15, self.A_BlendGrapple, TargetBlend )
 
 	-- Don't blend in these cases
 	if self.A_BlendGrapple > 0.999 then
@@ -308,7 +314,7 @@ end
 function PLY:RunPoseAnims( Delta )
 
 	-- Keep blend speeds consistent
-	self.PoseDelta = Delta
+	self.PoseDelta = math.Clamp( Delta, 0, 0.1 )
 
 	-- Make or retrieve pose
 	self:GetPose()
@@ -323,6 +329,8 @@ function PLY:RunPoseAnims( Delta )
 
 	-- Apply Pose to Player
 	self:ApplyPose()
+	
+	self.LastPoseDelta = Delta
 
 end
 
@@ -332,14 +340,14 @@ end
 -- Run poses on players
 --
 
-local function ThinkPoseAnims()
+function ThinkPoseAnims()
 
 	LocalPlayer():RunPoseAnims( FrameTime() )
 
 end
 
 
-local function TickPoseAnims()
+function TickPoseAnims()
 
 	for k,ply in pairs( player.GetAll() ) do
 
@@ -351,11 +359,13 @@ local function TickPoseAnims()
 				
 			else
 				
+				if !ply.A_SkipDiv then ply.A_SkipDiv = 1 end
+				
 				// Skip frames per 1000 units
 				local Dist = ply:GetPos():Distance( LocalPlayer():GetPos() )
 				
 				ply.A_Skip = math.floor( Dist/1000 )
-				if !ply.A_SkipDiv then ply.A_SkipDiv = 1 end
+				
 				
 				ply:RunPoseAnims( engine.TickInterval() * ply.A_SkipDiv )
 				ply.A_SkipDiv = ply.A_Skip + 1
@@ -368,70 +378,3 @@ local function TickPoseAnims()
 
 end
 hook.Add( "Tick", "RunPoseAnims", TickPoseAnims )
-
-
-local function ThirdPersonView( ply, pos, angles, fov )
-
-	local view = {}
-
-	//view.origin = pos + Vector( 0, 0, 40 ) + angles:Forward() * 150
-	view.angles = angles
-
-	local M = Matrix()
-	M:Rotate( angles )
-	M:Translate( Vector( -70, 0, 10 ) )
-
-	local trace = {
-		start = pos,
-		endpos = pos + M:GetTranslation(),
-		mask = MASK_SOLID_BRUSHONLY,
-		radius = 25
-	}
-
-	local sphere = util.spheretrace( trace, false )
-
-	if sphere then
-
-		view.origin = sphere.HitPos
-
-	end
-
-	/*
-	view.origin = pos + Vector(0,0,-20) + ( angles:Forward()*100 )
-	angles.p = -angles.p
-	view.angles = angles +Angle(0,180,0)
-	*/
-
-	view.fov = fov
-	view.drawviewer = true
-
-	return view
-
-end
-
-
-local function UpdateThirdPerson()
-	
-	if LocalPlayer():IsThirdPerson() then
-		
-		hook.Add( "CalcView", "ThirdPerson", ThirdPersonView )
-		hook.Add( "Think", "RunPoseAnims", ThinkPoseAnims )
-	
-	else
-		
-		hook.Remove( "CalcView", "ThirdPerson" )
-		hook.Remove( "Think", "RunPoseAnims" )
-		
-	end
-	
-end
-
--- hacky asf
-timer.Simple( 5, UpdateThirdPerson )
-
-concommand.Add( "gg_thirdperson", function( args )
-	
-	LocalSettings:Input( "thirdperson", !LocalSettings:GetData()[ "thirdperson" ], true )
-	UpdateThirdPerson()
-	
-end )

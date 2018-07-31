@@ -52,6 +52,33 @@ end )
 
 
 --
+-- Damage Combo
+--
+
+ACH_Havoc = Achievement( "Havoc", "havoc" )
+ACH_Havoc.Description = "Deal an 800 damage combo"
+ACH_Havoc.WinAt = 800
+
+ACH_Anarchy = Achievement( "Anarchy", "anarchy" )
+ACH_Anarchy.Description = "Deal a 1500 damage combo"
+ACH_Anarchy.WinAt = 1500
+
+ACH_Mayhem = Achievement( "Mayhem", "mayhem" )
+ACH_Mayhem.Description = "Deal a 3000 damage combo"
+ACH_Mayhem.WinAt = 3000
+
+S_DamageCombo:BindOnUpdate( "DamageAchievements", function( ply )
+
+	local Amount = S_DamageCombo:GetData( ply, "Amount" )
+
+	ACH_Havoc:Set( ply, "Amount", Amount )
+	ACH_Anarchy:Set( ply, "Amount", Amount )
+	ACH_Mayhem:Set( ply, "Amount", Amount )
+
+end )
+
+
+--
 -- When they enable aimbot
 --
 

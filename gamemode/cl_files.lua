@@ -27,19 +27,22 @@ local Files = {
 	"client/widgets/sniper_ch",
 	"client/widgets/crosshairs",
 	"client/widgets/colourtint",
+	"client/widgets/damagenotify",
+	"client/widgets/killnotify",
+	"client/derma/mapvote",
+	
 	"client/derma/scoreboard",
 	"client/derma/playerstats",
-	//"client/derma/mapvote",
 	
 	"client/hudlist",
 
 	"data/achievements",
 	"data/achievementlist",
 	"data/localsettings",
+	"client/views",
 
 	"anims/poses",
 	"anims/posemaker",
-	//"anims/poseblender",
 	"anims/posemixer",
 	"anims/posestack",
 
@@ -51,9 +54,8 @@ local Files = {
 	"gametypes/states/endgame",
 
 	"gametypes/gametypes/ffa",
-
+	
 	"data/podiums",
-
 	"shared/maps",
 }
 

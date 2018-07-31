@@ -221,7 +221,7 @@ function Stats:SetPly( ply, Key, Amount, Save )
 	if Save then self:SavePly( ply ) end
 
 	self:RunHook( "OnUpdate", ply, Key, Amount, Save )
-
+	
 end
 
 -- Replicate
@@ -255,7 +255,7 @@ function Stats:IncrementPly( ply, Key, Amount, Save )
 
 	if self:Replicates() then
 		
-		sendArgs( "AchievementInc", { self.RepID, ply, Key, Amount, Save } )
+		sendArgs( "StatsInc", { self.RepID, ply, Key, Amount, Save } )
 		
 	end
 	
@@ -305,6 +305,17 @@ function Stats:GetTotal( ply )
 
 	return Count
 
+	
+end
+
+
+function Stats:TestCombo( ply, Amount )
+
+	if Amount > self:GetData( ply, "Amount" ) then
+		
+		self:Set( ply, "Amount", Amount )
+		
+	end
 	
 end
 

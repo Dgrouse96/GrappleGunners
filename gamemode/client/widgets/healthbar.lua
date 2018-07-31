@@ -1,11 +1,3 @@
--- Kill any existing widgets
-if Widget_HealthBar then
-
-    Widget_HealthBar:Kill()
-    Widget_HealthBar = nil
-	
-end
-
 -- Create widget object
 Widget_HealthBar = Widget()
 

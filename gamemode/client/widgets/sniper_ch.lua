@@ -1,10 +1,6 @@
--- Kill any existing widgets
-if SniperCrosshair then
-	
-	SniperCrosshair:Kill()
-    SniperCrosshair = nil
-	
-end
+--
+-- Crosshair for the sniper
+--
 
 SniperCrosshair = Widget()
 

@@ -1,8 +1,9 @@
 Derma_Scoreboard = Derma( true )
-
+Derma_Scoreboard.Enabled = false
 -- On Creation
 function Derma_Scoreboard:Init()
 	
+	self.Enabled = true
 	self.SpawnTime = CurTime()
 	gui.EnableScreenClicker( true )
 	
@@ -140,6 +141,8 @@ function Derma_Scoreboard:Init()
 		Avatar:SetSize( 50, 50 )
 		Avatar:SetPos( 2+8, 2 )
 		Avatar:SetPlayer( ply, 64 )
+		Avatar:MouseCapture( false )
+		Avatar:SetMouseInputEnabled( false )
 		
 		-- Per player bars
 		local Colour
@@ -205,6 +208,7 @@ end
 -- On Death
 function Derma_Scoreboard:Death()
 	
+	self.Enabled = false
 	gui.EnableScreenClicker( false )
 
 	if IsValid( self.Frame ) then
@@ -222,15 +226,15 @@ end
 --
 
 function GM:ScoreboardShow()
-
+	
+	CurrentGameplayHud:SetHidden( true )
 	HUD_Scoreboard:SetHidden( false )
-	HUD_Gameplay:SetHidden( true )
 	
 end
 
 function GM:ScoreboardHide()
 
 	HUD_Scoreboard:SetHidden( true )
-	HUD_Gameplay:SetHidden( false )
+	CurrentGameplayHud:SetHidden( false )
 	
 end

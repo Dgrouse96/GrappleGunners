@@ -90,7 +90,7 @@ function PlayTime:GetPlayTime( ply, GameType, format )
 	local Data = self:GetTypeData( ply, GameType )
 	local R = 0
 	
-	if GameType == CurrentGameType.ID then
+	if CurrentGameType and GameType == CurrentGameType.ID then
 		
 		R = math.floor( CurTime() - Data.Start + Data.Total )
 	

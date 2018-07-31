@@ -2,15 +2,6 @@
 -- Simple warmup state, no stat collection
 --
 
-
--- Kill existing Warmup
-if GS_Warmup then
-
-    GS_Warmup:Kill()
-    GS_Warmup = nil
-	
-end
-
 -- Setup default vars
 GS_Warmup = GameState( { 
 	
@@ -58,6 +49,13 @@ end
 function GS_Warmup:Enter( Seconds )
 	
 	self:CountDown( Seconds )
+	LockMovement( false )
+	
+	if CLIENT then
+		
+		SetGameplayHud( HUD_Gameplay )
+	
+	end
 	
 end
 

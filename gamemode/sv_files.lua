@@ -55,19 +55,21 @@ local Files = {
 		"client/widgets/shotty_ch",
 		"client/widgets/sniper_ch",
 		"client/widgets/crosshairs",
-		
 		"client/widgets/colourtint",
+		"client/widgets/damagenotify",
+		"client/widgets/killnotify",
+		
 		"client/derma/scoreboard",
 		"client/derma/playerstats",
-		//"client/derma/mapvote",
+		"client/derma/mapvote",
 		
 		"client/hudlist",
 		
 		"data/localsettings",
+		"client/views",
 
 		"anims/poses",
 		"anims/posemaker",
-		//"anims/poseblender",
 		"anims/posemixer",
 		"anims/posestack",
 	},

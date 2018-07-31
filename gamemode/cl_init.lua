@@ -29,3 +29,5 @@ hook.Add( "HUDShouldDraw", "HideHUD", function( name )
 	if ( Hide[ name ] ) then return false end
 
 end )
+
+print( "Grapple Gunners - Client Loaded" )

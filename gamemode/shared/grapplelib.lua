@@ -40,6 +40,18 @@ function inverselerp( A, Min, Max )
 	
 end
 
+function inverselerpclamp( A, Min, Max )
+	
+	return math.Clamp( inverselerp( A, Min, Max ), 0, 1 )
+	
+end
+
+function LerpClamp( Alpha, From, To )
+	
+	return math.Clamp( Lerp( Alpha, From, To ), 0, 1 )
+	
+end
+
 -- Powerful easing function
 function ease( A, Pow, Inf )
 
@@ -57,6 +69,13 @@ function LerpColor( Alpha, A, B )
 	Blend.a = Lerp( Alpha, A.a, B.a )
 	
 	return Blend
+	
+end
+
+-- Lerps towards target without over shooting
+function Lerp2( Alpha, A, B )
+	
+	return Lerp( math.Clamp( Alpha, 0, 1 ), A, B )
 	
 end
 
@@ -131,3 +150,4 @@ end
 --
 
 COL_WHITE = Color( 255, 255, 255, 255 )
+COL_BLACK = Color( 0, 0, 0, 255 )

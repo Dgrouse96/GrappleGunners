@@ -31,7 +31,17 @@ function GameType:new( ID )
 		SortedPlayers = function()
 			
 			local tab = table.Copy( player.GetAll() )
-			table.sort( tab, function( a, b ) return a:Frags() > b:Frags() end )
+			table.sort( tab, function( a, b ) 
+				
+				if a:Frags() == b:Frags() then 
+						
+					return ( a.LastFrag or 10000000000 ) < ( b.LastFrag or 10000000000 )
+						
+				end
+				
+				return a:Frags() > b:Frags()
+				
+			end )
 			return tab
 			
 		end
@@ -154,7 +164,7 @@ function GameType:GetState( ID )
 
 	if !ID then
 
-		return self.States[ CurrentState ]
+		return self.States[ self.CurrentState ]
 
 	end
 
@@ -167,9 +177,9 @@ end
 function GameType:SetState( NewState, Replicate, ... )
 
 	if !self:GetState( NewState ) then return end
-
+	
 	if SERVER then
-
+	
 		if Replicate then
 
 			sendTable( "NewGameState", { self.ID, NewState, ... } )
@@ -178,7 +188,7 @@ function GameType:SetState( NewState, Replicate, ... )
 
 	end
 
-	local LastState = CurrentState
+	local LastState = self.CurrentState
 
 	-- Leave last state
 	if self:GetState() then
@@ -210,7 +220,8 @@ function GameType:SetState( NewState, Replicate, ... )
 
 	end
 
-	CurrentState = NewState
+	self.CurrentState = NewState
+	self.CurrentStateArgs = ...
 
 end
 
@@ -228,6 +239,7 @@ function GameType:SetNextState( ID, ... )
 
 	self.NextState = ID
 	self.NextStateArgs = ...
+	
 end
 
 
@@ -279,6 +291,7 @@ function GameType:Play()
 	end
 
 	self.InPlay = true
+	
 	self:AddHooks()
 
 	if self.Init then
@@ -332,19 +345,44 @@ if SERVER then
 			
 		end
 		
-		sendFloat( "StartGameType", GT.ID )
+		GT:Play()
+		
+		UpdateGameType( _, GT )
 		PlayTime:SetGameTypeRep( _, GT.ID )
 		
-		GT:Play()
+	end
+	
+	function UpdateGameType( ply, GT )
+		
+		if !GT then GT = CurrentGameType end
+		if !GT then return end
+		
+		sendArgs( "StartGameType", { GT.ID, GT.CurrentState, GT.CurrentStateArgs }, ply )
 		
 	end
 
 else
 	
-	hook.Add( "StartGameType", "ClientRep", function( f )
-	
-		GetGameTypeByID( f ):Play()
-	
+	hook.Add( "StartGameType", "ClientRep", function( ID, State, ... )
+		
+		GetGameTypeByID( ID ):Play()
+		GetGameTypeByID( ID ):SetState( State, ... )
+		
 	end )
 	
 end
+
+-- Helps to sort players properly
+local function LastFragDeath( Victim, Inflictor, Attacker )
+	
+	Attacker.LastFrag = CurTime()
+	
+	if SERVER then
+	
+		sendArgs( "CL_PlayerDeath", { Victim, Inflictor, Attacker } )
+		
+	end
+	
+end
+hook.Add( "PlayerDeath", "SetLastFrag", LastFragDeath )
+hook.Add( "CL_PlayerDeath", "SetLastFrag", LastFragDeath )

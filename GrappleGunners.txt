@@ -4,4 +4,5 @@
 	"title"		"Grapple Gunners"
 	"maps"		"^gr_"
 	"menusystem"	"1"
+	"workshopid"	"1460274143"
 }

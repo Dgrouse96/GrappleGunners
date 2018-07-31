@@ -16,7 +16,7 @@ function PLY:IsThirdPerson()
 	
 	if self != LocalPlayer() then return false end
 	
-	if Setting()[ "thirdperson" ] then
+	if Setting()[ "thirdperson" ] or InCameraAnim then
 		
 		return true
 		

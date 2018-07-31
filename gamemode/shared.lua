@@ -20,6 +20,12 @@ function PLY:SetupPlayer()
 
 end
 
+hook.Add( "SetupPlayer", "Replicate", function( ply ) 
+	
+	if IsValid( ply ) and ply:IsPlayer() then ply:SetupPlayer() end
+	
+end )
+
 function SetupAllPlayers()
 	
 	for k,ply in pairs( player.GetAll() ) do

@@ -177,9 +177,31 @@ function string.SortTime( s )
 	
 end
 
-function draw.OutlinedBox( x, y, w, h, thickness, clr )
+function string.PlaceSuffix( N )
+	
+	if N % 10 == 1 and N != 11 then return N .. "st" end
+	if N % 10 == 2 and N != 12 then return N .. "nd" end
+	if N % 10 == 3 and N != 13 then return N .. "rd" end
+	
+	return N .. "th"
+	
+end
+
+function draw.OutlinedBox( x, y, w, h, thickness, clr, clr2 )
+	
+	local Col = clr
 	surface.SetDrawColor( clr )
+	
 	for i=0, thickness - 1 do
+		
+		if clr2 then
+		
+			clr = LerpColor( inverselerpclamp( i, 0, thickness ), Col, clr2 )
+			surface.SetDrawColor( clr )
+			
+		end
+		
 		surface.DrawOutlinedRect( x + i, y + i, w - i * 2, h - i * 2 )
+		
 	end
 end
