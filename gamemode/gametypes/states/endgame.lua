@@ -11,18 +11,24 @@ function GS_EndGame:Enter( Winner )
 			
 		end
 		
-		PrintMessage( HUD_PRINTTALK, "Game known to break at this movement - not to worry, there's a 30 second safety net." )
-		
 		-- Saftey net
 		timer.Simple( 35, function()
 			
-			PrintMessage( HUD_PRINTTALK, "Sorry! Looks like the gamemode broke again, report this to me asap." )
+			PrintMessage( HUD_PRINTTALK, "Error! Report this to me asap, auto fixing..." )
 			MapList:ChoseAndSendMaps()
 			
 		end )
 		
+		
+		-- Send them to their locked movement pos
 		self:AddHook( "PlayerSpawn", self.PlayerSpawn )
 		
+		-- Don't send new client's any old timers
+		ClearCurrentTimer()
+		self:AddHook( "PlayerInitialSpawn", self.PlayerInitialSpawn )
+		
+		
+		-- Setup podium
 		self.Podium = SpawnPodium()
 		
 		if !self.Podium then MapList:ChoseAndSendMaps() return end
@@ -70,6 +76,7 @@ function GS_EndGame:Enter( Winner )
 		
 	else
 		
+		Widget_Timer.Length = 0
 		SetGameplayHud( HUD_GameOver )
 		
 	end
@@ -84,5 +91,12 @@ function GS_EndGame:PlayerSpawn( ply )
 		ply:SetPos( ply.MovementLockedPos )
 		
 	end
+	
+end
+
+
+function GS_EndGame:PlayerInitialSpawn( ply )
+	
+	SendCurrentTimer( ply )
 	
 end

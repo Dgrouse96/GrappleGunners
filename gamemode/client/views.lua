@@ -153,3 +153,22 @@ concommand.Add( "gg_thirdperson", function( args )
 	UpdateThirdPerson()
 	
 end )
+
+
+-- Temporary fix
+if game.GetMap() == "gr_crossroads" then
+	
+	RunConsoleCommand( "pp_colormod", "1" )
+	RunConsoleCommand( "pp_colormod_contrast", "1.4" )
+	RunConsoleCommand( "pp_colormod_brightness", "0.1" )
+	
+	RunConsoleCommand( "pp_bloom", "1" )
+	RunConsoleCommand( "pp_bloom_multiply", "1" )
+	RunConsoleCommand( "pp_bloom_darken", "0.5" )
+
+else
+
+	RunConsoleCommand( "pp_colormod", "0" )
+	RunConsoleCommand( "pp_bloom", "0" )
+	
+end

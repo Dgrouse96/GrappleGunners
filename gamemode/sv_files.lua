@@ -6,6 +6,7 @@ local Files = {
 
 	{ -- Pre Server
 		"network/sv_network",
+		"server/sv_utilities"
 	},
 
 	{ -- Shared
@@ -36,7 +37,6 @@ local Files = {
 	},
 
 	{ -- Server
-
 	},
 
 	{ -- Client
@@ -58,6 +58,7 @@ local Files = {
 		"client/widgets/colourtint",
 		"client/widgets/damagenotify",
 		"client/widgets/killnotify",
+		"client/widgets/timer",
 		
 		"client/derma/scoreboard",
 		"client/derma/playerstats",

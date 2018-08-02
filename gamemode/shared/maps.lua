@@ -2,7 +2,7 @@
 -- Map List
 --
 
--- Please use console commands to add maps
+-- Please use console commands to add maps // Not ready yet :o
 -- gg_mapadd "mapname" "friendlyname" "description"
 -- gg_mapgametype "mapname" "gametype" "weight"
 -- gg_mapremove "mapname"
@@ -79,7 +79,7 @@ MapList:Input( "gm_goldencity_day",{
   Name = "Golden City",
   Description = "\"I have many pizzas that need delivering and you are LATE, as always.\"",
   GameTypes = {
-	[ 2 ] = 0.5,
+	//[ 2 ] = 0.5,
   },
 } )
 
@@ -122,6 +122,7 @@ function MapList:ChoseAndSendMaps()
 	self.MapVotes = { 0,0,0 }
 	sendTable( "AddMapChoices", self.VoteChoices )
 	
+	SetTimerTime( 15 )
 	timer.Create( "MapVoteTimer", 15, 1, function() MapList:PlayVotedMap() end )
 	
 end
@@ -192,6 +193,7 @@ function MapList:PlayVotedMap()
 	MapList.VotedMap = HighVotes[ math.random( 1, #HighVotes ) ]
 	sendArgs( "MapSelected", { MapList.VotedMap } )
 	
+	SetTimerTime( 3 )
 	timer.Simple( 3, function() MapList:ChangeMap() end )
 	
 end

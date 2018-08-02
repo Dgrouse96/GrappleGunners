@@ -29,8 +29,9 @@ local Files = {
 	"client/widgets/colourtint",
 	"client/widgets/damagenotify",
 	"client/widgets/killnotify",
-	"client/derma/mapvote",
+	"client/widgets/timer",
 	
+	"client/derma/mapvote",
 	"client/derma/scoreboard",
 	"client/derma/playerstats",
 	

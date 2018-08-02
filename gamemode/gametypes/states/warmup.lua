@@ -31,7 +31,8 @@ function GS_Warmup:CountDown( Seconds )
 	self.Length = Seconds
 	
 	if SERVER then
-	
+		
+		SetTimerTime( Seconds )
 		timer.Create( "GS_Warmup", Seconds, 1, function() GS_Warmup:CountDownEnded() end )
 		
 	end
@@ -53,11 +54,23 @@ function GS_Warmup:Enter( Seconds )
 	
 	if CLIENT then
 		
-		SetGameplayHud( HUD_Gameplay )
+		SetGameplayHud( HUD_Warmup )
+	
+	else
+	
+		self:AddHook( "PlayerInitialSpawn", self.PlayerInitialSpawn )
 	
 	end
 	
 end
+
+
+function GS_Warmup:PlayerInitialSpawn( ply )
+	
+	SendCurrentTimer( ply )
+	
+end
+
 
 function GS_Warmup:Leave()
 	

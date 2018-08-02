@@ -47,8 +47,9 @@ local PlayerModels = {
 
 
 function GM:PlayerSetModel( ply )
-
-	ply:SetModel( PlayerModels[ math.random( #PlayerModels ) ] )
+	
+	if !ply.PlayerModel then ply.PlayerModel = PlayerModels[ math.random( #PlayerModels ) ] end
+	ply:SetModel( ply.PlayerModel )
 
 end
 

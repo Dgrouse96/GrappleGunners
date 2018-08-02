@@ -158,6 +158,13 @@ local Fonts = {
 		shadow = true,
 	},
 	
+	["Timer"]={
+		font = "CPMono_v07 Bold",
+		size = 30,
+		antialias = true,
+		shadow = false,
+	},
+	
 }
 
 function RefreshFont( font )

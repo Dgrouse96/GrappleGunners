@@ -50,6 +50,22 @@ function HUD:AddWidget( Name, Widget )
 	
 end
 
+function HUD:ReparentWidgets()
+	
+	for Name, Widget in pairs( self.Widgets ) do
+		
+		Widget.Parent = self
+		
+		if Widget.Reparent then
+			
+			Widget:Reparent()
+			
+		end
+		
+	end
+	
+end
+
 function HUD:RemoveWidget( Name )
 	
 	if self.Widgets[ Name ] then
