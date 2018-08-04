@@ -22,6 +22,7 @@ local Hide = {
 	["CHudAmmo"] = true,
 	["CHudCrosshair"] = true,
 	["CHudSecondaryAmmo"] = true,
+	["CHudDamageIndicator"] = true,
 }
 
 hook.Add( "HUDShouldDraw", "HideHUD", function( name )
