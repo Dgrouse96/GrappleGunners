@@ -8,7 +8,7 @@ function EFFECT:Init( Data )
 
 	self.ply = Data:GetEntity()
 
-	if self.ply and self.ply:Alive() and self.ply.GrappleLocation then
+	if IsValid( self.ply ) and self.ply:Alive() and self.ply.GrappleLocation then
 
 		//self:NewMaterial()
 		self:SetModel( "models/grapplegunners/grapplecable.mdl" )

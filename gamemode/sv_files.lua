@@ -15,11 +15,11 @@ local Files = {
 		"shared/grapple",
 		"shared/grapplelib",
 		"shared/datalib",
-		
+
 		"data/stats",
 		"data/playtime",
 		"data/statlist",
-		
+
 		"data/achievements",
 		"data/achievementlist",
 
@@ -49,7 +49,7 @@ local Files = {
 		"client/widget",
 		"client/derma",
 		"client/hud",
-		
+
 		"client/widgets/energybar",
 		"client/widgets/healthbar",
 		"client/widgets/shotty_ch",
@@ -59,13 +59,13 @@ local Files = {
 		"client/widgets/damagenotify",
 		"client/widgets/killnotify",
 		"client/widgets/timer",
-		
+
 		"client/derma/scoreboard",
 		"client/derma/playerstats",
 		"client/derma/mapvote",
-		
+
 		"client/hudlist",
-		
+
 		"data/localsettings",
 		"client/views",
 
@@ -150,3 +150,9 @@ for k,v in pairs(Resources) do
 	resource.AddFile( v )
 
 end
+
+-- Quickfix, will upload to workshop when I get home
+resource.AddFile( "materials/nature3/road2.vmt")
+resource.AddFile( "materials/nature3/road2.vtf")
+resource.AddFile( "materials/nature3/road2_env.vtf")
+resource.AddFile( "materials/nature3/road2_ssbump.vtf")
