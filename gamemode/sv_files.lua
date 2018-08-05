@@ -152,7 +152,7 @@ for k,v in pairs(Resources) do
 end
 
 -- Quickfix, will upload to workshop when I get home
-resource.AddFile( "materials/nature3/road2.vmt")
-resource.AddFile( "materials/nature3/road2.vtf")
-resource.AddFile( "materials/nature3/road2_env.vtf")
-resource.AddFile( "materials/nature3/road2_ssbump.vtf")
+resource.AddSingleFile( "materials/nature3/road2.vmt")
+resource.AddSingleFile( "materials/nature3/road2.vtf")
+resource.AddSingleFile( "materials/nature3/road2_env.vtf")
+resource.AddSingleFile( "materials/nature3/road2_ssbump.vtf")
