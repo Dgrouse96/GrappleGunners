@@ -161,6 +161,7 @@ if game.GetMap() == "gr_crossroads" then
 	RunConsoleCommand( "pp_colormod", "1" )
 	RunConsoleCommand( "pp_colormod_contrast", "1.4" )
 	RunConsoleCommand( "pp_colormod_brightness", "0.1" )
+	RunConsoleCommand( "pp_colormod_color", "1" )
 	RunConsoleCommand( "pp_colormod_addr", "0" )
 	RunConsoleCommand( "pp_colormod_addg", "0" )
 	RunConsoleCommand( "pp_colormod_addb", "0" )

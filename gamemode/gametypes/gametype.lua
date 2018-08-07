@@ -75,6 +75,8 @@ function GameType:TopThree()
 		
 	end
 	
+	return Top3
+	
 end
 
 
