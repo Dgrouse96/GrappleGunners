@@ -30,6 +30,7 @@ local Files = {
 	"client/widgets/damagenotify",
 	"client/widgets/killnotify",
 	"client/widgets/timer",
+	"client/widgets/damageindicator",
 	
 	"client/derma/mapvote",
 	"client/derma/scoreboard",

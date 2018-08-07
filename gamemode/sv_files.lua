@@ -59,6 +59,7 @@ local Files = {
 		"client/widgets/damagenotify",
 		"client/widgets/killnotify",
 		"client/widgets/timer",
+		"client/widgets/damageindicator",
 
 		"client/derma/scoreboard",
 		"client/derma/playerstats",
@@ -150,9 +151,3 @@ for k,v in pairs(Resources) do
 	resource.AddFile( v )
 
 end
-
--- Quickfix, will upload to workshop when I get home
-resource.AddSingleFile( "materials/nature3/road2.vmt")
-resource.AddSingleFile( "materials/nature3/road2.vtf")
-resource.AddSingleFile( "materials/nature3/road2_env.vtf")
-resource.AddSingleFile( "materials/nature3/road2_ssbump.vtf")

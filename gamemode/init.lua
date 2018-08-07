@@ -62,7 +62,6 @@ end
 
 
 function GM:PlayerInitialSpawn( ply )
-
 	
 	PlayTime:SetGameType( ply )
 	SendMapList( ply )
